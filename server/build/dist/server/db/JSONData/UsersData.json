@@ -1,0 +1,10 @@
+{
+  "users":[
+    {"id":1,"user_name":"Raz","password":"rrr","age":27},
+    {"id":2,"user_name":"Moshe","password":"holy_moses","age":28},
+    {"id":3,"user_name":"Itay","password":"CrackingCracks9001","age":29},
+    {"id":4,"user_name":"Evgeni","password":"var","age":30},
+    {"id":5,"user_name":"Ori","password":"magniv","age":35},
+    {"id":6,"user_name":"Yuval","password":"hamebulbal","age":31}
+  ]
+}
