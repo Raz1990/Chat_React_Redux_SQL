@@ -11,8 +11,8 @@ export class ServerAPI {
 
     static getSingleUser(name: string, pass?: string) {
         const user = {
-            name: name,
-            pass: pass
+            user_name: name,
+            password: pass
         };
         return this.post('/users/login', user);
     }
@@ -26,13 +26,13 @@ export class ServerAPI {
         return this.post('/messages/getHistory', chat);
     }
 
-    static addMessageToAConversation(senderName: string, receiverName: string, type: string, message: string, time: string) {
+    static addMessageToAConversation(sender_id: number, receiver_id: number, type: string, content: string, time: string) {
         const msg = {
-            senderName: senderName,
-            receiverName: receiverName,
-            type: type,
-            message: message,
-            time: time
+            sender_id,
+            receiver_id,
+            type,
+            content,
+            time
         };
         return this.post('/messages/addMessage', msg);
     }

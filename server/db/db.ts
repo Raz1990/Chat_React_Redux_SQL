@@ -103,4 +103,21 @@ export default class DB {
         }
         return query;
     }
+
+    static CallSP(spName, ...params){
+        query = `CALL ${spName} (`;
+        let paramsCount = 0;
+        for (const parameter of params){
+            if (isNaN(parameter)) {
+                query += `'${parameter}'`;
+            }
+            else {
+                query += parameter;
+            }
+            if (++paramsCount < params.length) {
+                query += ', ';
+            }
+        }
+        query += ')';
+    }
 }

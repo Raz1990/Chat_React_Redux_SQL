@@ -18,7 +18,6 @@ interface IPanelProps {
 }
 
 class AdminPanel extends React.Component<IPanelProps,IPanelState> {
-
     constructor(props: IPanelProps){
         super(props);
 
@@ -64,7 +63,6 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
         else {
             //group or user
             type = currentlyActive.classList[0];
-
         }
 
         switch (action.target.innerText){

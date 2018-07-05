@@ -58,11 +58,11 @@ class MessageInputArea extends React.Component<{},IMessageInputAreaState> {
             return;
         }
 
-        if (receiver.getType() === 'group') {
+        /*if (receiver.getType() === 'group') {
             message = currentUser.getName() + ': ' + message;
-        }
+        }*/
 
-        ServerAPI.addMessageToAConversation(currentUser.getName(),receiver.getName(), receiver.getType(), message, moment().format("HH:mm:ss"))
+        ServerAPI.addMessageToAConversation(currentUser.getId(),receiver.getId(), receiver.getType(), message, moment().format("HH:mm:ss"))
             .then((done) => {
                 if (done) {
                     MyFunctions.emitTheIO('chat');

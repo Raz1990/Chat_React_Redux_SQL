@@ -4,6 +4,18 @@ const db = new DB().getConnection();
 
 let query;
 
+// testing script
+
+// addUser({user_name:'Raz', password:'ggg', age:30});
+// updateUser({id:1, password:'rrr', age:27});
+// getUserById(1);
+ getUserByNameXORPassword({user_name:'Raz', password:'rrr'});
+// getUserByNameXORPassword({user_name:'Raz'});
+// addUser({user_name:'Moshe', password:'moses', age:28});
+// addUser({user_name:'Temp', password:'t', age:69});
+// getAllUsers();
+// deleteUser({id:3});
+
 export function addUser(user) {
     return new Promise((resolve, reject) => {
         query = DB.insert('users',user.user_name,user.password,user.age);
@@ -11,13 +23,12 @@ export function addUser(user) {
             if (err){
                 console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);
             }
+            console.log('in addUser');
             console.log(results);
-            resolve(results.affectedRows);
+            resolve(results.insertId);
         });
     });
 }
-
-//addUser({user_name:'Baz', password:'rrr', age:27});
 
 export function getUserById(id: number) {
     return new Promise((resolve, reject) => {
@@ -26,13 +37,12 @@ export function getUserById(id: number) {
             if (err){
                 console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
             }
+            console.log('in getUserById');
             console.log(results[0]);
             resolve(results[0]);
         });
     });
 }
-
-//getUserById(1);
 
 export function getUserByNameXORPassword(user) {
     return new Promise((resolve, reject) => {
@@ -46,14 +56,12 @@ export function getUserByNameXORPassword(user) {
             if (err){
                 console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
             }
+            console.log('in getUserByNameXORPassword');
             console.log(results[0]);
             resolve(results[0]);
         });
     });
 }
-
-//getUserByNameXORPassword({user_name:'Raz', password:'rrr'});
-//getUserByNameXORPassword({user_name:'Raz'});
 
 export function getAllUsers() {
     return new Promise((resolve, reject) => {
@@ -62,13 +70,12 @@ export function getAllUsers() {
             if (err){
                 console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
             }
+            console.log('in getAllUsers');
             console.log(results);
             resolve(results);
         });
     });
 }
-
-//getAllUsers();
 
 export function deleteUser(user) {
     return new Promise((resolve, reject) => {
@@ -77,13 +84,12 @@ export function deleteUser(user) {
             if (err){
                 console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
             }
+            console.log('in deleteUser');
             console.log(results);
             resolve(results);
         });
     });
 }
-
-//deleteUser({id:4});
 
 export function updateUser(user) {
     return new Promise((resolve, reject) => {
@@ -92,13 +98,12 @@ export function updateUser(user) {
             if (err){
                 console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
             }
+            console.log('in updateUser');
             console.log(results);
             resolve(results.affectedRows);
         });
     });
 }
-
-//updateUser({id:1, password:'ggg', age:30});
 
 
 

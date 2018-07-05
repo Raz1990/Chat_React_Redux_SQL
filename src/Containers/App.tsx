@@ -7,15 +7,14 @@ import RightArea from './RightArea';
 import StateStore from "./../State/StateStore";
 import Modal from "./../Components/Modal";
 import {ServerAPI} from "./../ServerAPI";
-import MyFunctions from '../Classess/helpers';
-import styles from "./../Styles/styles"
+import styles from "./../Styles/styles";
+import {User} from "../Classess/User";
 
 interface IAppProps {
 
 }
 
 class App extends React.Component<IAppProps,any> {
-
     constructor(props: IAppProps){
         super(props);
 
@@ -37,13 +36,13 @@ class App extends React.Component<IAppProps,any> {
             .then((currentUser) => {
                 //if found a user
                 if (currentUser){
-                    currentUser = MyFunctions.UserifyOne(currentUser);
-                    alert('Welcome, ' + currentUser.getName());
-                    this.setState({currentUser:currentUser});
-                    StateStore.getInstance().set('currentUser', currentUser);
+                    const user = new User(currentUser.id,currentUser.user_name,currentUser.password,currentUser.age);
+                    alert('Welcome, ' + user.getName());
+                    this.setState({currentUser:user});
+                    StateStore.getInstance().set('currentUser', user);
                 }
                 else {
-                    alert('User not found!');
+                    alert(this.state.username + ' not found!');
                 }
             });
     };

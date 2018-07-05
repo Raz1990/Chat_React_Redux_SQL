@@ -2,7 +2,7 @@ import * as services from './../../Services';
 
 export async function getMessagesHistory(req , res) {
     try {
-        const messages = await services.MessagesService.getMessagesHistory(req.body);
+        const messages = await services.MessagesService.getMessagesHistory(req.body.sender_id, req.body.receiver_id, req.body.type);
         res.json(messages);
     }
     catch (e) {

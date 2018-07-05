@@ -117,6 +117,27 @@ var DB = /** @class */ (function () {
         }
         return query;
     };
+    DB.CallSP = function (spName) {
+        var params = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            params[_i - 1] = arguments[_i];
+        }
+        query = "CALL " + spName + " (";
+        var paramsCount = 0;
+        for (var _a = 0, params_1 = params; _a < params_1.length; _a++) {
+            var parameter = params_1[_a];
+            if (isNaN(parameter)) {
+                query += "'" + parameter + "'";
+            }
+            else {
+                query += parameter;
+            }
+            if (++paramsCount < params.length) {
+                query += ', ';
+            }
+        }
+        query += ')';
+    };
     return DB;
 }());
 exports.default = DB;

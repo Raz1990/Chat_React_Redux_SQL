@@ -43,7 +43,7 @@ function getMessagesHistory(req, res) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, services.MessagesService.getMessagesHistory(req.body)];
+                    return [4 /*yield*/, services.MessagesService.getMessagesHistory(req.body.sender_id, req.body.receiver_id, req.body.type)];
                 case 1:
                     messages = _a.sent();
                     res.json(messages);
