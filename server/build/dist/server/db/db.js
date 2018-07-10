@@ -28,16 +28,16 @@ var DB = /** @class */ (function () {
         }
         query = "SELECT " + what + " FROM " + table;
         if (filters.length > 0) {
-            query += ' WHERE';
+            query += ' WHERE ';
         }
         var filtersCount = 0;
         for (var _a = 0, filters_1 = filters; _a < filters_1.length; _a++) {
             var filter = filters_1[_a];
             if (isNaN(filter.value)) {
-                query += " " + filter.field + " = '" + filter.value + "'";
+                query += filter.field + " = '" + filter.value + "'";
             }
             else {
-                query += " " + filter.field + " = " + filter.value;
+                query += filter.field + " = " + filter.value;
             }
             if (++filtersCount < filters.length) {
                 query += ' AND ';

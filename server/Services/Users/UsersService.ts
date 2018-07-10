@@ -9,7 +9,7 @@ let query;
 // addUser({user_name:'Raz', password:'ggg', age:30});
 // updateUser({id:1, password:'rrr', age:27});
 // getUserById(1);
- getUserByNameXORPassword({user_name:'Raz', password:'rrr'});
+// getUserByNameXORPassword({user_name:'Raz', password:'rrr'});
 // getUserByNameXORPassword({user_name:'Raz'});
 // addUser({user_name:'Moshe', password:'moses', age:28});
 // addUser({user_name:'Temp', password:'t', age:69});
@@ -71,6 +71,19 @@ export function getAllUsers() {
                 console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
             }
             console.log('in getAllUsers');
+            console.log(results);
+            resolve(results);
+        });
+    });
+}
+
+export function getAllUsersInGroups() {
+    return new Promise((resolve, reject) => {
+        query = DB.select('*','users_in_group');
+        db.query(query, (err, results)=>{
+            if (err){
+                console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
+            }
             console.log(results);
             resolve(results);
         });

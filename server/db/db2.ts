@@ -22,8 +22,8 @@ class Db2 {
         fileName = "Groups";
         this.groups = Db2.readFromJson(fileName).groups;
 
-        //this.users = MyFunctions.Userify(Db2.readFromJson(fileName).users);
-        //this.groups = MyFunctions.Groupify(Db2.readFromJson(fileName).groups);
+        //this.users = Helpers.Userify(Db2.readFromJson(fileName).users);
+        //this.groups = Helpers.Groupify(Db2.readFromJson(fileName).groups);
     }
 
     static instance: Db2;

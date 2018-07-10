@@ -30,6 +30,16 @@ export async function getAllUsers(req , res) {
     }
 }
 
+export async function getAllUsersInGroups(req , res) {
+    try {
+        const users = await services.UsersService.getAllUsersInGroups();
+        res.json(users);
+    }
+    catch (e) {
+        res.send('Bad request');
+    }
+}
+
 export async function addUser(req , res) {
     try {
         const user = await services.UsersService.addUser(req.body);

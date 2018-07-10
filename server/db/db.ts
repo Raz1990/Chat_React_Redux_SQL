@@ -26,15 +26,15 @@ export default class DB {
     static select(what,table,...filters) {
         query = `SELECT ${what} FROM ${table}`;
         if (filters.length > 0){
-            query += ' WHERE';
+            query += ' WHERE ';
         }
         let filtersCount = 0;
         for (const filter of filters){
             if (isNaN(filter.value)) {
-                query += ` ${filter.field} = '${filter.value}'`;
+                query += `${filter.field} = '${filter.value}'`;
             }
             else {
-                query += ` ${filter.field} = ${filter.value}`;
+                query += `${filter.field} = ${filter.value}`;
             }
             if (++filtersCount < filters.length) {
                 query += ' AND ';

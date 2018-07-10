@@ -62,7 +62,7 @@ export function getAllGroups() {
     });
 }
 
-export function getAllGroupMembers(group_id) {
+export function getGroupMembers(group_id) {
     return new Promise((resolve, reject) => {
         query = DB.select('user_id','users_in_group', {field:'host_id', value:group_id});
         db.query(query, (err, results)=>{
@@ -152,40 +152,41 @@ export function moveGroups(groups) {
     });
 }
 
-export function deleteGroup(group, flatten?) {
+export async function deleteGroup(group, flatten?) {
     if (flatten) {
         //find the parent group id
         query = DB.select('parent_id', 'groups', {field: 'id', value: group.id});
-        db.query(query, (err, results) => {
+        db.query(query, async (err, results) => {
             if (err) {
                 console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
             }
             const new_host_id = results[0].parent_id;
             console.log(new_host_id);
-            return moveUsersToAnotherGroup(group,new_host_id);
+            const resToReturn = await moveUsersToAnotherGroup(group,new_host_id);
+            return resToReturn;
             });
         }
     else {
-        return deleteUsersFromAGroup(group);
+        return await deleteUsersFromAGroup(group);
     }
 }
 
 function deleteUsersFromAGroup(group) {
     //delete the members from the old group
     query = DB.delete('users_in_group',{field:'host_id', value:group.id});
-    db.query(query, (err, results)=>{
+    db.query(query, async (err, results)=>{
         if (err){
             console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
         }
         console.log(results);
-        return proceedDelete(group);
+        return await proceedDelete(group);
     });
 }
 
 function moveUsersToAnotherGroup(group, new_host_id) {
     //find the group users
     query = DB.select('user_id', 'users_in_group', {field: 'host_id', value: group.id});
-    db.query(query, (err, results) => {
+    db.query(query, async (err, results) => {
         if (err) {
             console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
         }
@@ -205,7 +206,7 @@ function moveUsersToAnotherGroup(group, new_host_id) {
                 console.log(results);
             });
         }
-        return proceedDelete(group);
+        return await proceedDelete(group);
     });
 }
 
@@ -217,7 +218,7 @@ function proceedDelete(group) {
                 console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
             }
             console.log(results);
-            resolve(results);
+            resolve(results.affectedRows);
         });
     });
 }

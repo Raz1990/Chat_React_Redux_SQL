@@ -102,17 +102,17 @@ function getAllUsers(req, res) {
     });
 }
 exports.getAllUsers = getAllUsers;
-function addUser(req, res) {
+function getAllUsersInGroups(req, res) {
     return __awaiter(this, void 0, void 0, function () {
-        var user, e_4;
+        var users, e_4;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, services.UsersService.addUser(req.body)];
+                    return [4 /*yield*/, services.UsersService.getAllUsersInGroups()];
                 case 1:
-                    user = _a.sent();
-                    res.json(user);
+                    users = _a.sent();
+                    res.json(users);
                     return [3 /*break*/, 3];
                 case 2:
                     e_4 = _a.sent();
@@ -123,15 +123,15 @@ function addUser(req, res) {
         });
     });
 }
-exports.addUser = addUser;
-function deleteUser(req, res) {
+exports.getAllUsersInGroups = getAllUsersInGroups;
+function addUser(req, res) {
     return __awaiter(this, void 0, void 0, function () {
         var user, e_5;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, services.UsersService.deleteUser(req.body)];
+                    return [4 /*yield*/, services.UsersService.addUser(req.body)];
                 case 1:
                     user = _a.sent();
                     res.json(user);
@@ -145,10 +145,32 @@ function deleteUser(req, res) {
         });
     });
 }
+exports.addUser = addUser;
+function deleteUser(req, res) {
+    return __awaiter(this, void 0, void 0, function () {
+        var user, e_6;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, services.UsersService.deleteUser(req.body)];
+                case 1:
+                    user = _a.sent();
+                    res.json(user);
+                    return [3 /*break*/, 3];
+                case 2:
+                    e_6 = _a.sent();
+                    res.send('Bad request');
+                    return [3 /*break*/, 3];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
 exports.deleteUser = deleteUser;
 function updateUser(req, res) {
     return __awaiter(this, void 0, void 0, function () {
-        var user, e_6;
+        var user, e_7;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
@@ -159,7 +181,7 @@ function updateUser(req, res) {
                     res.json(user);
                     return [3 /*break*/, 3];
                 case 2:
-                    e_6 = _a.sent();
+                    e_7 = _a.sent();
                     res.send('Bad request');
                     return [3 /*break*/, 3];
                 case 3: return [2 /*return*/];

@@ -1,11 +1,13 @@
 import * as React from 'react';
 import * as moment from 'moment';
-import StateStore from './../State/StateStore';
 import {ServerAPI} from "./../ServerAPI";
+import {store} from './../Redux/store';
 
 import SpeechBubbleWrapper from './SpeechBubbleWrapper';
 import {User} from './../Classess/User';
 import ISpeechBubble from "../Interfaces/SpeechBubble";
+import ICanChat from "../Interfaces/ChatEntity";
+import Helpers from "../Classess/helpers";
 
 interface IConvoProps {
 }
@@ -16,15 +18,12 @@ interface IConvoState {
 
 class ConversationHistoryArea extends React.Component <IConvoProps,IConvoState> {
 
-    stateStore = StateStore.getInstance();
-    currentUser: User;
     speechBlock : any;
 
     constructor(props: IConvoProps){
         super(props);
 
         this.speechBlock = React.createRef();
-        this.currentUser = this.stateStore.get('currentUser');
 
         this.state = {
             speechBubbles : []
@@ -32,23 +31,75 @@ class ConversationHistoryArea extends React.Component <IConvoProps,IConvoState> 
 
         this.getMessages();
 
-        StateStore.getInstance().subscribe(()=>{
-            this.getMessages();
+        store.subscribe(() => {
+            this.getMessages()
         });
+
     }
 
     getMessages(){
-        if (!this.stateStore.get('inChatWith')){
+        if (!store.getState()['inChatWith']){
             return;
         }
-        ServerAPI.getMessages(this.currentUser.getName(),this.stateStore.get('inChatWith').getName(), this.stateStore.get('inChatWith').getType())
+        ServerAPI.getMessages(store.getState()['currentUser'].getId(),store.getState()['inChatWith'].getId(),store.getState()['inChatWith'].getType())
             .then((messageHistory) => {
-                /*for (let msg of messageHistory) {
-                    msg.sender = MyFunctions.UserifyOne(msg.sender.name);
-                    msg.receiver = MyFunctions.UserifyOne(msg.receiver.name);
-                }*/
+                ServerAPI.getMessages(store.getState()['inChatWith'].getId(),store.getState()['currentUser'].getId(),store.getState()['inChatWith'].getType())
+                    .then((otherSideMessageHistory) => {
+                        let fixedMessages = messageHistory.map( msg => {
+                            let sender : User = store.getState()['allUsers'].find(u => u.getId() === msg.sender_id);
+                            let receiver : ICanChat = store.getState()['allUsers'].find(u => u.getId() === msg.receiver_id);
+                            let content = msg.content;
+                            if (!receiver){
+                                receiver = store.getState()['allGroups'].find(g => g.getId() === msg.receiver_id);
+                                content = sender.getName() + ": " + content;
+                            }
+                            return {
+                                id:msg.id,
+                                sender:sender.getName(),
+                                receiver:receiver.getName(),
+                                timeSent:msg.time,
+                                content:content
+                            };
+                        });
+                        fixedMessages = fixedMessages.concat(otherSideMessageHistory.map( msg => {
+                            let sender : User = store.getState()['allUsers'].find(u => u.getId() === msg.sender_id);
+                            let receiver : ICanChat = store.getState()['allUsers'].find(u => u.getId() === msg.receiver_id);
+                            let content = msg.content;
+                            if (!receiver){
+                                receiver = store.getState()['allGroups'].find(g => g.getId() === msg.receiver_id);
+                                content = sender.getName() + ": " + content;
+                            }
+                            return {
+                                id:msg.id,
+                                sender:sender.getName(),
+                                receiver:receiver.getName(),
+                                timeSent:msg.time,
+                                content:content
+                            };
+                        }));
+                        fixedMessages.sort(Helpers.compare);
+                        this.setState({
+                            speechBubbles : fixedMessages
+                        });
+                    });
+
+
+                let fixedMessages = messageHistory.map( msg => {
+                    let sender : User = store.getState()['allUsers'].find(u => u.getId() === msg.sender_id);
+                    let receiver : ICanChat = store.getState()['allUsers'].find(u => u.getId() === msg.receiver_id);
+                    let content = msg.content;
+                    if (!receiver){
+                        receiver = store.getState()['allGroups'].find(g => g.getId() === msg.receiver_id);
+                        content = sender.getName() + ": " + content;
+                    }
+                    return {sender:sender.getName(),
+                            receiver:receiver.getName(),
+                            timeSent:msg.time,
+                            content:content
+                            };
+                });
                 this.setState({
-                    speechBubbles : messageHistory
+                    speechBubbles : fixedMessages
                 });
             });
     }
@@ -67,11 +118,8 @@ class ConversationHistoryArea extends React.Component <IConvoProps,IConvoState> 
         let bubbles = this.state.speechBubbles.map((bubble:any, idx) =>
             (
                 <SpeechBubbleWrapper
-                          key={idx}
-                          content={bubble.content}
-                          sender={bubble.sender.name}
-                          receiver={bubble.receiver.name}
-                          timeSent={bubble.timeSent}
+                    key={idx}
+                    SpeechBubble={bubble}
                 />
             )
             );

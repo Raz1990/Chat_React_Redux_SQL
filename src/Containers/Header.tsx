@@ -1,9 +1,9 @@
 import * as React from 'react';
 
 //components imports
-import StateStore from "../State/StateStore";
 import {User} from "../Classess/User";
 import ICanChat from "../Interfaces/ChatEntity";
+import {store} from './../Redux/store';
 
 interface IHeaderSTATE {
     currentUser : User
@@ -15,26 +15,20 @@ interface IHeaderPROPS {
 
 class Header extends React.Component<IHeaderPROPS,IHeaderSTATE> {
 
-    listenerIndex: number;
-
     constructor(props: IHeaderPROPS){
         super(props);
 
         this.state = {
-            currentUser : StateStore.getInstance().get('currentUser'),
-            inChatWith : StateStore.getInstance().get('inChatWith')
+            currentUser : store.getState()['currentUser'],
+            inChatWith: store.getState()['inChatWith'],
         };
 
-        this.listenerIndex = StateStore.getInstance().subscribe(()=>{
+        store.subscribe(() => {
             this.setState({
-                currentUser : StateStore.getInstance().get('currentUser'),
-                inChatWith : StateStore.getInstance().get('inChatWith')
+                currentUser : store.getState()['currentUser'],
+                inChatWith: store.getState()['inChatWith']
             });
-        });
-    }
-
-    componentWillUnmount(){
-        //StateStore.getInstance().unsubscribe(this.listenerIndex);
+        })
     }
 
     public render() {

@@ -1,77 +1,104 @@
 import {User} from "./User";
 import {Group} from "./Group";
-import StateStore from "./../State/StateStore";
 import * as io from "socket.io-client";
+import {store} from "../Redux/store";
+import * as actions from './../Redux/actions';
+import {ServerAPI} from "../ServerAPI";
 
 const socket = io('http://localhost:4000');
 
-class MyFunctions {
-    static Userify(fakeUsers){
-        let usersARR = [];
-        for (const fakeUser of fakeUsers){
-            usersARR.push(new User(fakeUser.id,fakeUser.user_name,fakeUser.password,fakeUser.age));
-        }
-        return usersARR;
+class Helpers {
+
+    static async storeAllEntities(){
+        await Helpers.storeUsers();
+        await Helpers.storeGroups();
+
+        let entityArray;
+
+        entityArray = [].concat(store.getState()['allGroups']).concat(store.getState()['allUsers']);
+
+        store.dispatch(actions.setChatEntities(entityArray));
     }
+
+    static storeUsers = async () => {
+        await ServerAPI.getUsers()
+            .then((users) => {
+                users = Helpers.Userify(users);
+                store.dispatch(actions.setAllUsers(users));
+            });
+    };
+
+    static storeGroups = async () => {
+        await ServerAPI.getGroups()
+            .then(async (groups) => {
+                await ServerAPI.getAllUsersInGroups()
+                    .then((groupMembers) => {
+                        groups = Helpers.Groupify(groups,groupMembers,store.getState()['allUsers']);
+                        store.dispatch(actions.setAllGroups(groups));
+                    });
+            });
+
+    };
 
     static startTheIO = () => {
         socket.on('chat', () => {
-            StateStore.getInstance().onStoreChanged();
+            store.dispatch(actions.refresh())
         });
     };
 
-    static _io = MyFunctions.startTheIO();
+    static _io = Helpers.startTheIO();
 
     static emitTheIO = (text) => {
         socket.emit(text);
     };
 
-    static UserifyOne(fakeUser){
-        return new User(fakeUser.id,fakeUser.user_name,fakeUser.password,fakeUser.age);
+    static Userify(userObjects){
+        let usersARR = [];
+        for (const userObject of userObjects){
+            usersARR.push(new User(userObject.id,userObject.user_name,userObject.password,userObject.age));
+        }
+        return usersARR;
     }
 
-    static Groupify(fakeGroups){
+    static Groupify(groupObjects, memberObjects, users){
         let groupsARR = [];
-        for (const fakeGroup of fakeGroups){
-            groupsARR.push(this._innerGroupify(fakeGroup));
+        let parentIds = [];
+        for (const groupObject of groupObjects){
+            let group = new Group(groupObject.id, groupObject.group_name);
+            parentIds.push(groupObject.parent_id);
+            groupsARR.push(group);
         }
-        this.groupParentify(groupsARR);
+        this.groupParentify(groupsARR,parentIds);
+        this.groupMemberfy(groupsARR,memberObjects,users);
+
         return groupsARR;
     }
 
-    static _innerGroupify(fakeGroup){
-        let groupMembers = [];
-
-        for (const member of fakeGroup.members) {
-            //if it has members, that means its a group
-            if (!member.members){
-                groupMembers.push(new User(member.id,member.user_name,member.password,member.age));
+    static groupParentify(groupsARR,parentIds){
+        let i = 0;
+        for (const group of groupsARR){
+            let parentId = parentIds[i++];
+            if (parentId){
+                let parentGroup = groupsARR.find(g => g.id === parentId);
+                group.setParentGroup(parentGroup);
+                group.is_child = true;
+                parentGroup.addNewMember(group);
             }
             else {
-                groupMembers.push(this._innerGroupify(member));
-            }
-        }
-
-        return new Group(fakeGroup.id,fakeGroup.group_name,groupMembers,fakeGroup.is_child);
-    }
-
-    static groupParentify(groupsARR){
-        //fix
-        for (const parentGroup of groupsARR){
-            for (const childGroup of parentGroup.getGroupMembers()){
-                if (childGroup.getType() === 'group'){
-                    childGroup.setParentGroup(parentGroup);
-                }
-                else{
-                    break;
-                }
-                if (childGroup.getGroupMembers()) {
-                    this.groupParentify([childGroup]);
-                }
+                group.is_child = false;
+                group.setParentGroup(null);
             }
         }
     }
 
+    static groupMemberfy(groups,memberObjects,users){
+        //memberObjects -> host_id - parent group, user_id
+        for (const member of memberObjects) {
+            let thisGroup = groups.find(g => g.getId() === member.host_id);
+            let thisUser = users.find(u => u.getId() === member.user_id);
+            thisGroup.addNewMember(thisUser);
+        }
+    }
 
     //gets an element and gives it the "disabled" class
     static makeActive = (element: any) => {
@@ -82,52 +109,32 @@ class MyFunctions {
             workingElement = element;
         }
 
-        MyFunctions.removeActive();
+        Helpers.removeActive();
 
         //add the disabled status to the selected element
         workingElement.classList.toggle('active');
 
-        let stateStore = StateStore.getInstance();
         let chattingWith;
 
         if (workingElement.classList.contains('noChat')) {
             chattingWith = null;
         }
         else {
-            chattingWith = MyFunctions.getChatEntity(workingElement.innerText);
+            chattingWith = Helpers.getChatEntity(parseInt(workingElement.id), workingElement.innerText);
         }
 
-        if (chattingWith!= null){
-            if (chattingWith.members){
-                chattingWith = MyFunctions.Groupify([chattingWith]).find(o => o.group_name === chattingWith.group_name);
-            }
-            else {
-                    chattingWith = MyFunctions.UserifyOne(chattingWith);
-                }
-        }
-
-
-        stateStore.set('inChatWith', chattingWith);
-        stateStore.set('chatElement', workingElement);
+        store.dispatch(actions.setInChatWith(chattingWith));
+        store.dispatch(actions.setChatElement(workingElement));
     };
 
-    static getUserOrGroup(object){
-        if (object.members){
-            return this.Groupify([object])[0];
-        }
-        else {
-            return this.UserifyOne(object);
-        }
-    }
-
-    static getChatEntity(name: string) {
+    static getChatEntity(id: number, name: string) {
         let entity;
-        const users = StateStore.getInstance().get('allUsers');
-        const groups = StateStore.getInstance().get('allGroups');
+        const users = store.getState()['allUsers'];
+        const groups = store.getState()['allGroups'];
 
-        entity = users.find(o => o.user_name === name);
+        entity = users.find(o => o.getId() === id && o.getName() === name);
         if (!entity){
-            entity = groups.find(o => o.group_name === name);
+            entity = groups.find(o => o.getId() === id && o.getName() === name);
         }
 
         return entity;
@@ -150,7 +157,7 @@ class MyFunctions {
             workingElement = element;
         }
 
-        let eleChildren = MyFunctions.getElementChildren(workingElement);
+        let eleChildren = Helpers.getElementChildren(workingElement);
 
         if (!eleChildren) {
             return;
@@ -161,9 +168,9 @@ class MyFunctions {
             let child = eleChildren[i];
 
             child.classList.toggle('isHidden');
-            const innerChildHidden = MyFunctions.areElementsHidden(MyFunctions.getElementChildren(child));
+            const innerChildHidden = Helpers.areElementsHidden(Helpers.getElementChildren(child));
             if (child.classList.contains('isHidden') && !innerChildHidden) {
-                MyFunctions.decideVisibility(child);
+                Helpers.decideVisibility(child);
             }
         }
 
@@ -189,7 +196,7 @@ class MyFunctions {
     static getElementParent(element: any) {
         //classList[4] = childOf_*** (parent group)
         //substring(8) = just the ***
-        if (element.classList[4]) {
+        if (element.classList[3]) {
             const className = element.classList[3].substring(8);
             const parent = document.getElementsByClassName(className)[0];
             return parent;
@@ -211,25 +218,25 @@ class MyFunctions {
         const currentlyActive = document.getElementsByClassName('active')[0];
         let liChildren, liParent;
         if (currentlyActive) {
-            liChildren = MyFunctions.getElementChildren(currentlyActive);
-            liParent = MyFunctions.getElementParent(currentlyActive);
+            liChildren = Helpers.getElementChildren(currentlyActive);
+            liParent = Helpers.getElementParent(currentlyActive);
         }
 
         switch (event.key) {
             case 'ArrowDown':
-                MyFunctions.dealWithDown(currentlyActive,liChildren,liParent);
+                Helpers.dealWithDown(currentlyActive,liChildren,liParent);
                 break;
             case 'ArrowUp':
-                MyFunctions.dealWithUp(currentlyActive);
+                Helpers.dealWithUp(currentlyActive);
                 break;
             case 'Enter':
-                MyFunctions.dealWithEnter(currentlyActive, liChildren);
+                Helpers.dealWithEnter(currentlyActive, liChildren);
                 break;
             case 'ArrowRight':
-                MyFunctions.dealWithRight(currentlyActive, liChildren);
+                Helpers.dealWithRight(currentlyActive, liChildren);
                 break;
             case 'ArrowLeft':
-                MyFunctions.dealWithLeft(currentlyActive, liChildren, liParent);
+                Helpers.dealWithLeft(currentlyActive, liChildren, liParent);
                 break;
         }
     };
@@ -240,7 +247,7 @@ class MyFunctions {
         const allLis = document.getElementsByTagName('li');
         const firstLi = allLis[0];
         if (!currentlyActive && firstLi){
-            MyFunctions.makeActive(firstLi);
+            Helpers.makeActive(firstLi);
         }
 
         //if nothing is disabled, and no li in sight, simply go back
@@ -253,46 +260,54 @@ class MyFunctions {
         //check if its a group
         if (currentlyActive.classList.contains('group')) {
             //get its children
-            liChildren = MyFunctions.getElementChildren(currentlyActive);
+            liChildren = Helpers.getElementChildren(currentlyActive);
         }
         //if it's a child of another element, get the parent
         if (currentlyActive.classList.contains('childElement')) {
-            liParent = MyFunctions.getElementParent(currentlyActive);
+            liParent = Helpers.getElementParent(currentlyActive);
         }
 
-        idNow = parseInt(currentlyActive.id);
+        idNow = parseInt(currentlyActive.dataset.orderid);
 
         const lastLi = allLis[allLis.length-1];
 
-        if (idNow === parseInt(lastLi.id)) {
+        if (idNow === parseInt(lastLi.dataset.orderid)) {
             return;
         }
 
         //if has children and
         //those children are visible and can be moved to
-        if (liChildren && !MyFunctions.areElementsHidden(liChildren)) {
+        if (liChildren && !Helpers.areElementsHidden(liChildren)) {
             eleToActive = liChildren[0];
         }
         else {
             if(liParent){
-                let parentsChildren = MyFunctions.getElementChildren(liParent);
-                let lastChild = parentsChildren[parentsChildren.length - 1];
+                let parentsChildren = Helpers.getElementChildren(liParent);
+                let lastChild: any = parentsChildren[parentsChildren.length - 1];
                 //if i'm the last disabled child
-                if (parseInt(lastChild.id) === idNow) {
-                    //take my parent's id
-                    idNow = parseInt(liParent.id);
+                if (parseInt(lastChild.dataset.orderid) === idNow) {
+                    //take my par-parent's id
+                    let liParParent: any = Helpers.getElementParent(liParent);
+                    if (liParParent) {
+                        idNow = parseInt(liParParent.dataset.orderid);
+                    }
+                    else {
+                        idNow = parseInt(liParent.dataset.orderid);
+                    }
                 }
             }
-            eleToActive = document.getElementById((idNow + 1).toString());
+            idNow++;
+            const queryString = "[data-orderid='"+idNow+"']";
+            eleToActive = document.querySelector(queryString);
         }
 
-        MyFunctions.makeActive(eleToActive);
+        Helpers.makeActive(eleToActive);
     };
 
     static dealWithUp = (currentlyActive: any) => {
         let eleToActive, idNow, previousLi;
 
-        idNow = parseInt(currentlyActive.id);
+        idNow = parseInt(currentlyActive.dataset.orderid);
 
         if (idNow === 1) {
             return;
@@ -307,28 +322,28 @@ class MyFunctions {
             }
         }while (eleToActive.classList.contains('isHidden'));
 
-        MyFunctions.makeActive(eleToActive);
+        Helpers.makeActive(eleToActive);
     };
 
     static dealWithLeft = (currentlyActive: any, liChildren: any, liParent: any) => {
 
         if (liChildren) {
-            if (!MyFunctions.areElementsHidden(liChildren)) {
-                MyFunctions.decideVisibility(currentlyActive);
+            if (!Helpers.areElementsHidden(liChildren)) {
+                Helpers.decideVisibility(currentlyActive);
             }
             else if (liParent) {
-                if (MyFunctions.areElementsHidden(MyFunctions.getElementChildren(liParent))) {
-                    MyFunctions.decideVisibility(liParent);
+                if (Helpers.areElementsHidden(Helpers.getElementChildren(liParent))) {
+                    Helpers.decideVisibility(liParent);
                 }
-                MyFunctions.makeActive(liParent);
+                Helpers.makeActive(liParent);
             }
         }
         else if (liParent) {
-            if (MyFunctions.areElementsHidden(MyFunctions.getElementChildren(liParent))) {
-                MyFunctions.decideVisibility(liParent);
+            if (Helpers.areElementsHidden(Helpers.getElementChildren(liParent))) {
+                Helpers.decideVisibility(liParent);
             }
             else {
-                MyFunctions.makeActive(liParent);
+                Helpers.makeActive(liParent);
             }
         }
     };
@@ -337,8 +352,8 @@ class MyFunctions {
         //if it has children
         if (liChildren.length > 0) {
             //if any of my children are hidden, i will hide myself
-            if (MyFunctions.areElementsHidden(liChildren)) {
-                MyFunctions.decideVisibility(currentlyActive);
+            if (Helpers.areElementsHidden(liChildren)) {
+                Helpers.decideVisibility(currentlyActive);
             }
             //makeActive(liChildren[0]);
         }
@@ -347,9 +362,44 @@ class MyFunctions {
     static dealWithEnter = (currentlyActive: any, liChildren: any) => {
         //if it has children
         if (liChildren.length > 0) {
-            MyFunctions.decideVisibility(currentlyActive);
+            Helpers.decideVisibility(currentlyActive);
         }
     };
+
+    static replies = {};
+
+    static AIReply(receiver:string){
+
+        const rand = Math.floor(Math.random() * Helpers.replies[receiver].length);
+
+        const reply = Helpers.replies[receiver][rand];
+
+        return reply;
+    }
+
+    static generateMockUpAnswers(){
+        Helpers.replies['Raz'] = ['פיצה ויומנגס וצ\'יפס','מה הקטע לדבר עם עצמך?', 'מדבר עם עצמך? באמת?', 'רפלקציה עצמית זה מגניב', 'מה נסגר לדבר עם עצמך?', 'הד הד הדדד', 'המחלקה הפסיכיאטרית בכיוון ההוא'];
+        Helpers.replies['Moshe'] = ['הכל חרטא ברטא תאמין לי','יש לי נוד שמביא צ\'ילדרן של נאד','אמן','לא אכפת לי, אתה צדיק'];
+        Helpers.replies['Itay'] = ['עכשיו תוסיף עוד 100 ש"ח','זה גורם למיינד פאק רציני','מארוול וDC הם אחלה','חם פה אש','אני שולח את זה לAPI חיצוני','אחלה AI לתשובות עשית', 'coc.png'];
+        Helpers.replies['Evgeni'] = ['יאללה לאכול','משהו פה לא מסתדר לי','צאו להפסקה'];
+        Helpers.replies['Ori'] = ['מגניב!','אז מה למדנו היום?','זה אוכל את זה?', 'נחמד','אני עושה npm i npm start וזהו'];
+        Helpers.replies['Yuval'] = ['עוגי שיגעוגי','פאו צ\'יקא-וואו-וואו','קמהאמאה!!!','HERO   ore o tataeru koe ya   kassai nante   hoshikute wa nai sa!!!','Ka ka ka ka kachi daze!!!','Omae Wa Mou Shindeiru!'];
+        Helpers.replies['Best Friends'] = ['איתי: ' + ': טוב לא חשוב הקראק נשאר אצלי', 'משה: ' + ': קראק זה חרטא ברטא', 'איתי: ' +  ': אתם מפספסים אחלה קראק', 'משה: ' +  ': מישהו יכול לעזור לי עם הנוד שלי?', 'איתי: ' + ': חברים חפרתם'];
+        //Helpers.replies['Best Friends'] = ['תשובה גנרית'];
+    }
+
+    static _replies = Helpers.generateMockUpAnswers();
+
+    static compare(a: any, b: any) {
+        if (a.id < b.id) {
+            return -1;
+        }
+        if (a.id > b.id) {
+            return 1;
+        }
+        // a must be equal to b
+        return 0;
+    }
 }
 
-export default MyFunctions;
+export default Helpers;

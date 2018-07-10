@@ -46,6 +46,9 @@ class DeletingPanel extends React.Component<IDelProps,IDelState> {
                     affirmation: true
                 });
             }
+            else {
+                this.props.submitCallback(false);
+            }
         }
         else {
             this.props.submitCallback(false);

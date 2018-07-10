@@ -4,6 +4,7 @@ var express = require("express");
 var Controllers = require("../Controllers");
 var usersRouter = express.Router();
 usersRouter.get('/', Controllers.UsersController.getAllUsers);
+usersRouter.get('/usersInGroups', Controllers.UsersController.getAllUsersInGroups);
 usersRouter.get('/:id', Controllers.UsersController.getUserById);
 usersRouter.post('/login', Controllers.UsersController.getUserByNameXORPassword);
 usersRouter.post('/addUser', Controllers.UsersController.addUser);

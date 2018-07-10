@@ -1,26 +1,25 @@
 //A component for a speech bubble containing a className, content
 
 import * as React from 'react';
-import {User} from './../Classess/User';
 import SpeechBubbleContent from './../Components/SpeechBubbleContent';
-import StateStore from "../State/StateStore";
 import ISpeechBubble from "../Interfaces/SpeechBubble";
 
-class SpeechBubble extends React.Component<ISpeechBubble,{}> {
+interface ISpeechProps {
+    SpeechBubble: ISpeechBubble,
+    mine: boolean
+}
 
-    currentUser : User;
+class SpeechBubble extends React.Component<ISpeechProps,{}> {
 
-    constructor(props: ISpeechBubble) {
+    constructor(props: ISpeechProps) {
         super(props);
-
-        this.currentUser = StateStore.getInstance().get('currentUser');
     }
 
     public determineClass() {
         let chosenClass = 'speechBubble ';
 
         //determine color and position (left / right)
-        if (this.currentUser.getName() == this.props.sender) {
+        if (this.props.mine){
             chosenClass += 'mine ';
         }
         else{
@@ -28,7 +27,7 @@ class SpeechBubble extends React.Component<ISpeechBubble,{}> {
         }
 
         //determine language (English or not) by the first letter
-        if (/^[a-zA-Z]+$/.test(this.props.content[0])) {
+        if (/^[a-zA-Z]+$/.test(this.props.SpeechBubble.content[0])) {
             chosenClass += 'English';
         } else {
             chosenClass += 'otherLanguage';
@@ -38,7 +37,7 @@ class SpeechBubble extends React.Component<ISpeechBubble,{}> {
 
     public render() {
         return (
-            <div className={this.determineClass()}> <SpeechBubbleContent content={this.props.content}/> <div className={'messageTime'}>{this.props.timeSent}</div></div>
+            <div className={this.determineClass()}> <SpeechBubbleContent content={this.props.SpeechBubble.content}/> <div className={'messageTime'}>{this.props.SpeechBubble.timeSent}</div></div>
         );
     }
 }

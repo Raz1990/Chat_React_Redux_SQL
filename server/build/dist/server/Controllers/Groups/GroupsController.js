@@ -59,39 +59,40 @@ function getAllGroups(req, res) {
     });
 }
 exports.getAllGroups = getAllGroups;
-function addGroup(req, res) {
+function getGroupMembers(req, res) {
     return __awaiter(this, void 0, void 0, function () {
-        var group, e_2;
+        var members, e_2;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, services.GroupsService.addGroup(req.body)];
+                    return [4 /*yield*/, services.GroupsService.getGroupMembers(req.params['id'])];
                 case 1:
-                    group = _a.sent();
-                    res.json(group);
+                    members = _a.sent();
+                    res.json(members);
                     return [3 /*break*/, 3];
                 case 2:
                     e_2 = _a.sent();
-                    res.send('Bad request');
+                    console.log('GET ALL GROUPS ERROR', e_2);
+                    res.send('Bad request', e_2);
                     return [3 /*break*/, 3];
                 case 3: return [2 /*return*/];
             }
         });
     });
 }
-exports.addGroup = addGroup;
-function updateGroup(req, res) {
+exports.getGroupMembers = getGroupMembers;
+function addGroup(req, res) {
     return __awaiter(this, void 0, void 0, function () {
-        var groups, e_3;
+        var insertId, e_3;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, services.GroupsService.updateGroup(req.body)];
+                    return [4 /*yield*/, services.GroupsService.addGroup(req.body.group_name)];
                 case 1:
-                    groups = _a.sent();
-                    res.json(groups);
+                    insertId = _a.sent();
+                    res.json(insertId);
                     return [3 /*break*/, 3];
                 case 2:
                     e_3 = _a.sent();
@@ -102,18 +103,18 @@ function updateGroup(req, res) {
         });
     });
 }
-exports.updateGroup = updateGroup;
-function moveGroups(req, res) {
+exports.addGroup = addGroup;
+function updateGroup(req, res) {
     return __awaiter(this, void 0, void 0, function () {
-        var group, e_4;
+        var affectedRows, e_4;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, services.GroupsService.moveGroups(req.body)];
+                    return [4 /*yield*/, services.GroupsService.updateGroup(req.body)];
                 case 1:
-                    group = _a.sent();
-                    res.json(group);
+                    affectedRows = _a.sent();
+                    res.json(affectedRows);
                     return [3 /*break*/, 3];
                 case 2:
                     e_4 = _a.sent();
@@ -124,15 +125,15 @@ function moveGroups(req, res) {
         });
     });
 }
-exports.moveGroups = moveGroups;
-function addUserToGroup(req, res) {
+exports.updateGroup = updateGroup;
+function moveGroups(req, res) {
     return __awaiter(this, void 0, void 0, function () {
         var group, e_5;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, services.GroupsService.addUserToGroup(req.body)];
+                    return [4 /*yield*/, services.GroupsService.moveGroups(req.body)];
                 case 1:
                     group = _a.sent();
                     res.json(group);
@@ -146,18 +147,18 @@ function addUserToGroup(req, res) {
         });
     });
 }
-exports.addUserToGroup = addUserToGroup;
-function removeUserFromGroup(req, res) {
+exports.moveGroups = moveGroups;
+function addUserToGroup(req, res) {
     return __awaiter(this, void 0, void 0, function () {
-        var group, e_6;
+        var affectedRows, e_6;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, services.GroupsService.removeUserFromGroup(req.body)];
+                    return [4 /*yield*/, services.GroupsService.addUserToGroup(req.body)];
                 case 1:
-                    group = _a.sent();
-                    res.json(group);
+                    affectedRows = _a.sent();
+                    res.json(affectedRows);
                     return [3 /*break*/, 3];
                 case 2:
                     e_6 = _a.sent();
@@ -168,21 +169,43 @@ function removeUserFromGroup(req, res) {
         });
     });
 }
-exports.removeUserFromGroup = removeUserFromGroup;
-function deleteGroup(req, res) {
+exports.addUserToGroup = addUserToGroup;
+function removeUserFromGroup(req, res) {
     return __awaiter(this, void 0, void 0, function () {
-        var group, e_7;
+        var affectedRows, e_7;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     _a.trys.push([0, 2, , 3]);
-                    return [4 /*yield*/, services.GroupsService.deleteGroup(req.body)];
+                    return [4 /*yield*/, services.GroupsService.removeUserFromGroup(req.body)];
                 case 1:
-                    group = _a.sent();
-                    res.json(group);
+                    affectedRows = _a.sent();
+                    res.json(affectedRows);
                     return [3 /*break*/, 3];
                 case 2:
                     e_7 = _a.sent();
+                    res.send('Bad request');
+                    return [3 /*break*/, 3];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
+exports.removeUserFromGroup = removeUserFromGroup;
+function deleteGroup(req, res) {
+    return __awaiter(this, void 0, void 0, function () {
+        var affectedRows, e_8;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    _a.trys.push([0, 2, , 3]);
+                    return [4 /*yield*/, services.GroupsService.deleteGroup(req.body, req.body.flatten)];
+                case 1:
+                    affectedRows = _a.sent();
+                    res.json(affectedRows);
+                    return [3 /*break*/, 3];
+                case 2:
+                    e_8 = _a.sent();
                     res.send('Bad request');
                     return [3 /*break*/, 3];
                 case 3: return [2 /*return*/];

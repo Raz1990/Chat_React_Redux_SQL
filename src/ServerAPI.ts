@@ -9,19 +9,27 @@ export class ServerAPI {
         return this.get('/groups');
     }
 
-    static getSingleUser(name: string, pass?: string) {
+    static async getGroupMembers(id) {
+        return this.get('/groups/'+id);
+    }
+
+    static async getAllUsersInGroups() {
+        return this.get('/users/usersInGroups');
+    }
+
+    static getSingleUser(user_name: string, password?: string) {
         const user = {
-            user_name: name,
-            password: pass
+            user_name,
+            password
         };
         return this.post('/users/login', user);
     }
 
-    static getMessages(senderName: string, receiverName: string, receiverType: string) {
+    static getMessages(sender_id: number, receiver_id: number, type: string) {
         const chat = {
-            senderName: senderName,
-            receiverName: receiverName,
-            receiverType: receiverType
+            sender_id,
+            receiver_id,
+            type
         };
         return this.post('/messages/getHistory', chat);
     }
@@ -58,7 +66,7 @@ export class ServerAPI {
     }
 
     static updateGroup(group) {
-        return this.post('/groups/updateGroup', group);
+        return this.put('/groups/updateGroup', group);
     }
 
     static addGroupToGroup(host, mover) {
@@ -109,7 +117,9 @@ export class ServerAPI {
                 'Content-Type': 'application/json'
             }
         })
-            .then(res => res.json());
+            .then(res => {
+                res.json()
+            });
     }
 
     static delete(url, body) {
@@ -120,7 +130,9 @@ export class ServerAPI {
                 'Content-Type': 'application/json'
             }
         })
-            .then(res => res.json());
+            .then(res => {
+                res.json()
+            });
     }
 }
 

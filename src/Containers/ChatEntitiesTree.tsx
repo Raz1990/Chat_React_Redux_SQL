@@ -3,12 +3,13 @@
 import * as React from 'react';
 
 import Header from './Header';
-import StateStore from "../State/StateStore";
 import ICanChat from "../Interfaces/ChatEntity";
-import MyFunctions from '../Classess/helpers';
+import Helpers from '../Classess/helpers';
 import {User} from './../Classess/User';
 import {Group} from "../Classess/Group";
 import AdminPanel from './AdminPanel';
+import {store} from './../Redux/store';
+//import * as actions from './../Redux/actions';
 
 interface ITreeState {
     currentUser : User;
@@ -21,7 +22,6 @@ interface ITreeProps {
 class ChatEntitiesTree extends React.Component<ITreeProps,ITreeState> {
 
     ulTree: any;
-    dumbEntities;
 
     constructor(props: ITreeProps){
         super(props);
@@ -29,54 +29,47 @@ class ChatEntitiesTree extends React.Component<ITreeProps,ITreeState> {
         this.ulTree = React.createRef();
 
         this.state = {
-            currentUser : StateStore.getInstance().get('currentUser'),
-            entities : this.getEntities()
+            currentUser : store.getState()['currentUser'],
+            entities : store.getState()['allEntities']
         };
 
-        StateStore.getInstance().subscribe(()=>{
+        store.subscribe(() => {
+            this.setState({
+                currentUser : store.getState()['currentUser'],
+                entities : store.getState()['allEntities']
+            });
+        })
+
+        /*StateStore.getInstance().subscribe(()=>{
             this.setState({
                 currentUser : StateStore.getInstance().get('currentUser'),
                 entities : this.getEntities()
             });
-        });
+        });*/
     }
 
-    getEntities(){
-        let dumbEntities = StateStore.getInstance().get('allEntities');
-        let smartEntities = [];
-        if (!dumbEntities) return [];
-        for (let entity of dumbEntities){
-            //if it has members = it is a group
-            if (entity.members){
-                smartEntities.push(...MyFunctions.Groupify([entity]));
-            }
-            else {
-                smartEntities.push(MyFunctions.UserifyOne(entity));
-            }
-        }
-        return smartEntities;
-    }
-
-    singleLiCreate(item : ICanChat, idValue? : number, childElement? : any, parentLiClassName? : string, repeatSpaces? : number, chatable?: boolean){
+    singleLiCreate(item : ICanChat, orderIdValue? : number, childElement? : any, parentLiClassName?: string, repeatSpaces? : number, chatable?: boolean){
 
         childElement = childElement || false;
 
-        idValue = idValue || 1;
-
-        parentLiClassName = parentLiClassName || "";
+        orderIdValue = orderIdValue || 1;
 
         repeatSpaces = repeatSpaces || 0;
+
+        parentLiClassName = parentLiClassName || "";
 
         const itemNameForClass = item.getName().replace(' ', '_');
         let li = {
             innerHTML: '',
             className : '',
             id : '',
+            orderId : '',
             style: {}
         };
         li.innerHTML = item.getName();
         li.className += item.getType() + ' ' + itemNameForClass + ' ';
-        li.id = idValue.toString();
+        li.id = item.getId().toString();
+        li.orderId = orderIdValue.toString();
         li.style = { 'textIndent' : repeatSpaces +'em'};
 
         if (childElement) {
@@ -91,55 +84,68 @@ class ChatEntitiesTree extends React.Component<ITreeProps,ITreeState> {
 
     }
 
-    createListItems(items : ICanChat[], liList? : any[], repeatSpaces? : number, idValue? : number, child? : boolean, parentLiClassName? : string){
+    createListItems(items : ICanChat[], liList? : any[], repeatSpaces? : number, orderIdValue? : number, skipItem?:boolean, parentLiClassName? : string){
 
         liList = liList || [];
 
-        child = child || false;
-
         repeatSpaces = repeatSpaces || 0;
 
-        idValue = idValue || 1;
+        orderIdValue = orderIdValue || 1;
+
+        let is_child, chatable;
+
+        if (skipItem === undefined){
+            skipItem = true;
+        }
 
         for (let item of items) {
-
-            let chatable = true;
+            chatable = true;
+            is_child = false;
 
             if (item.getType() === 'group'){
                 const group_item = item as Group;
-                const is_child = group_item.isChild();
-                if (is_child && (idValue >= 1 && idValue < items.length)){
-                    continue;
+                is_child = group_item.isChild();
+                if (is_child){
+                    if (skipItem){
+                        continue;
+                    }
+                    parentLiClassName = group_item.getParentGroup().getName().replace(' ', '_');
                 }
-
-                if (item.getItems().length > 0) {
-                    //if the group holds a group, it must mean it holds groups only, and no users, thus it cannot be chattaed with
-                    if(item.getItems()[0].getType() === 'group') {
+                //if at least one of the members is a group, it means the group cannot
+                //hold users, and thus rendered unchatable.
+                const first_member_of_group = group_item.getGroupMembers()[0];
+                if (first_member_of_group){
+                    if (first_member_of_group.getType() === 'group') {
                         chatable = false;
                     }
                 }
             }
+            //else, its a user
+            //and if we wanted to skip showing the item, we'll also skip showing the users
+            else if (!skipItem){
+                is_child = true;
+            }
 
-            liList.push(this.singleLiCreate(item, idValue, child, parentLiClassName, repeatSpaces, chatable));
+            liList.push(this.singleLiCreate(item, orderIdValue, is_child, parentLiClassName, repeatSpaces, chatable));
 
             //if it's a group with items in it
             if (item.getItems().length > 0) {
-                this.createListItems(item.getItems(), liList,repeatSpaces + 1, items.length + idValue, true, item.getName().replace(' ', '_'));
+                this.createListItems(item.getItems(), liList,repeatSpaces + 1, items.length + orderIdValue, false, item.getName().replace(' ', '_'));
             }
 
-            idValue++;
+            orderIdValue++;
         }
 
 
         liList = liList.map((item, idx) => {
-            return <li style={item.style} onClick={MyFunctions.makeActive} onDoubleClick={MyFunctions.decideVisibility} className={item.className} id={item.id} key={idx}> {item.innerHTML} </li>;
+            return <li style={item.style} onClick={Helpers.makeActive} onDoubleClick={Helpers.decideVisibility} className={item.className} id={item.id} data-orderid={item.orderId} key={idx}> {item.innerHTML} </li>;
         });
 
         return liList;
     }
 
     componentDidMount() {
-        MyFunctions.setUpKeysEvents(this.ulTree.current);
+        Helpers.setUpKeysEvents(this.ulTree.current);
     }
 
     public render() {

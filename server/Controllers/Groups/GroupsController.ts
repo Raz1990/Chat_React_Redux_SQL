@@ -11,10 +11,21 @@ export async function getAllGroups(req , res) {
     }
 }
 
+export async function getGroupMembers(req , res) {
+    try {
+        const members = await services.GroupsService.getGroupMembers(req.params['id']);
+        res.json(members);
+    }
+    catch (e) {
+        console.log('GET ALL GROUPS ERROR',e);
+        res.send('Bad request', e);
+    }
+}
+
 export async function addGroup(req , res) {
     try {
-        const group = await services.GroupsService.addGroup(req.body);
-        res.json(group);
+        const insertId = await services.GroupsService.addGroup(req.body.group_name);
+        res.json(insertId);
     }
     catch (e) {
         res.send('Bad request');
@@ -23,8 +34,8 @@ export async function addGroup(req , res) {
 
 export async function updateGroup(req , res) {
     try {
-        const groups = await services.GroupsService.updateGroup(req.body);
-        res.json(groups);
+        const affectedRows = await services.GroupsService.updateGroup(req.body);
+        res.json(affectedRows);
     }
     catch (e) {
         res.send('Bad request');
@@ -43,8 +54,8 @@ export async function moveGroups(req , res) {
 
 export async function addUserToGroup(req , res) {
     try {
-        const group = await services.GroupsService.addUserToGroup(req.body);
-        res.json(group);
+        const affectedRows = await services.GroupsService.addUserToGroup(req.body);
+        res.json(affectedRows);
     }
     catch (e) {
         res.send('Bad request');
@@ -53,8 +64,8 @@ export async function addUserToGroup(req , res) {
 
 export async function removeUserFromGroup(req , res) {
     try {
-        const group = await services.GroupsService.removeUserFromGroup(req.body);
-        res.json(group);
+        const affectedRows = await services.GroupsService.removeUserFromGroup(req.body);
+        res.json(affectedRows);
     }
     catch (e) {
         res.send('Bad request');
@@ -63,8 +74,8 @@ export async function removeUserFromGroup(req , res) {
 
 export async function deleteGroup(req , res) {
     try {
-        const group = await services.GroupsService.deleteGroup(req.body);
-        res.json(group);
+        const affectedRows = await services.GroupsService.deleteGroup(req.body, req.body.flatten);
+        res.json(affectedRows);
     }
     catch (e) {
         res.send('Bad request');

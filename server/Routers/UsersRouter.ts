@@ -5,6 +5,8 @@ const usersRouter = express.Router();
 
 usersRouter.get('/', Controllers.UsersController.getAllUsers);
 
+usersRouter.get('/usersInGroups', Controllers.UsersController.getAllUsersInGroups);
+
 usersRouter.get('/:id', Controllers.UsersController.getUserById);
 
 usersRouter.post('/login', Controllers.UsersController.getUserByNameXORPassword);

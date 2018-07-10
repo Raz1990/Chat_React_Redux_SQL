@@ -1,11 +1,11 @@
 import * as React from 'react';
 import * as moment from 'moment';
-import StateStore from './../State/StateStore'
+import {store} from './../Redux/store';
 
 //components imports
 import MyButton from './../Components/MyButton';
 import {ServerAPI} from "../ServerAPI";
-import MyFunctions from "../Classess/helpers";
+import Helpers from "../Classess/helpers";
 
 interface IMessageInputAreaState {
     message: string
@@ -24,11 +24,6 @@ class MessageInputArea extends React.Component<{},IMessageInputAreaState> {
             message: ''
         };
 
-        StateStore.getInstance().subscribe(()=>{
-            this.setState({
-                message: ''
-            });
-        });
     }
 
     updateMessage = (e: any) => {
@@ -49,25 +44,25 @@ class MessageInputArea extends React.Component<{},IMessageInputAreaState> {
             return;
         }
 
-        let currentState = StateStore.getInstance();
-        let currentUser = currentState.get('currentUser');
-        let receiver = currentState.get('inChatWith');
+        let currentUser = store.getState()['currentUser'];
+        let receiver = store.getState()['inChatWith'];
         let message = this.state.message;
 
         if (message === ''){
             return;
         }
 
-        /*if (receiver.getType() === 'group') {
-            message = currentUser.getName() + ': ' + message;
-        }*/
-
-        ServerAPI.addMessageToAConversation(currentUser.getId(),receiver.getId(), receiver.getType(), message, moment().format("HH:mm:ss"))
+        ServerAPI.addMessageToAConversation(currentUser.getId(),receiver.getId(),receiver.getType(),message,moment().format("HH:mm"))
             .then((done) => {
-                if (done) {
-                    MyFunctions.emitTheIO('chat');
-                    //StateStore.getInstance().onStoreChanged();
-                }
+                this.clearMessage();
+                //start an "echo" from the receiver
+                const reply = Helpers.AIReply(receiver.getName());
+                ServerAPI.addMessageToAConversation(receiver.getId(),currentUser.getId(),receiver.getType(),reply,moment().format("HH:mm"))
+                    .then((done) => {
+                        if (done) {
+                            Helpers.emitTheIO('chat');
+                        }
+                    });
             });
     };
 

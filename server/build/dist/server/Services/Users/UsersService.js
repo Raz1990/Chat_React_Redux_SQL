@@ -7,7 +7,7 @@ var query;
 // addUser({user_name:'Raz', password:'ggg', age:30});
 // updateUser({id:1, password:'rrr', age:27});
 // getUserById(1);
-getUserByNameXORPassword({ user_name: 'Raz', password: 'rrr' });
+// getUserByNameXORPassword({user_name:'Raz', password:'rrr'});
 // getUserByNameXORPassword({user_name:'Raz'});
 // addUser({user_name:'Moshe', password:'moses', age:28});
 // addUser({user_name:'Temp', password:'t', age:69});
@@ -74,6 +74,19 @@ function getAllUsers() {
     });
 }
 exports.getAllUsers = getAllUsers;
+function getAllUsersInGroups() {
+    return new Promise(function (resolve, reject) {
+        query = db_1.default.select('*', 'users_in_group');
+        db.query(query, function (err, results) {
+            if (err) {
+                console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
+            }
+            console.log(results);
+            resolve(results);
+        });
+    });
+}
+exports.getAllUsersInGroups = getAllUsersInGroups;
 function deleteUser(user) {
     return new Promise(function (resolve, reject) {
         query = db_1.default.delete('users', { field: 'id', value: user.id });

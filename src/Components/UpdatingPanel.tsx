@@ -267,27 +267,6 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
         let removedUser;
 
         if (this.objectType === 'group'){
-            if (!this.state.movingGroup) {
-                movingGroup = this.getEligibleGroups()[0].group_name;
-            }
-            else {
-                movingGroup = this.state.movingGroup;
-            }
-
-            if (!this.state.addedUser) {
-                addedUser = this.getEligibleUsers()[0].user_name;
-            }
-            else {
-                addedUser = this.state.addedUser;
-            }
-
-            if (!this.state.removedUser) {
-                removedUser = this.props.updateObject.getGroupMembers()[0].user_name;
-            }
-            else {
-                removedUser = this.state.removedUser;
-            }
-
             switch (this.state.selectedAction) {
                 case "1":
                     objectToSend = {
@@ -298,6 +277,12 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
                     };
                     break;
                 case "2":
+                    if (!this.state.movingGroup) {
+                        movingGroup = this.getEligibleGroups()[0].group_name;
+                    }
+                    else {
+                        movingGroup = this.state.movingGroup;
+                    }
                     objectToSend = {
                         id: this.props.updateObject.getId(),
                         group_name: this.state.group_name,
@@ -307,6 +292,12 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
                     };
                     break;
                 case "3":
+                    if (!this.state.movingGroup) {
+                        movingGroup = this.getEligibleGroups()[0].group_name;
+                    }
+                    else {
+                        movingGroup = this.state.movingGroup;
+                    }
                     objectToSend = {
                         id: this.props.updateObject.getId(),
                         group_name: this.state.group_name,
@@ -316,6 +307,12 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
                     };
                     break;
                 case "4":
+                    if (!this.state.addedUser) {
+                        addedUser = this.getEligibleUsers()[0].user_name;
+                    }
+                    else {
+                        addedUser = this.state.addedUser;
+                    }
                     objectToSend = {
                         id: this.props.updateObject.getId(),
                         group_name: this.state.group_name,
@@ -324,6 +321,12 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
                     };
                     break;
                 case "5":
+                    if (!this.state.removedUser) {
+                        removedUser = this.props.updateObject.getGroupMembers()[0].user_name;
+                    }
+                    else {
+                        removedUser = this.state.removedUser;
+                    }
                     objectToSend = {
                         id: this.props.updateObject.getId(),
                         group_name: this.state.group_name,

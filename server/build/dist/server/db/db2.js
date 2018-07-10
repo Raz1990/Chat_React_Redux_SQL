@@ -13,8 +13,8 @@ var Db2 = /** @class */ (function () {
         this.users = Db2.readFromJson(fileName).users;
         fileName = "Groups";
         this.groups = Db2.readFromJson(fileName).groups;
-        //this.users = MyFunctions.Userify(Db2.readFromJson(fileName).users);
-        //this.groups = MyFunctions.Groupify(Db2.readFromJson(fileName).groups);
+        //this.users = Helpers.Userify(Db2.readFromJson(fileName).users);
+        //this.groups = Helpers.Groupify(Db2.readFromJson(fileName).groups);
     };
     Db2.getInstance = function () {
         if (!Db2.instance) {
