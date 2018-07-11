@@ -38,7 +38,7 @@ export function addGroup(group_name, parent_id?) {
 
 export function addUserToGroup(addingObject) {
     return new Promise((resolve, reject) => {
-        query = DB.insert('users_in_group',addingObject.host_id,addingObject.user_id);
+        query = DB.insert('users_in_group',addingObject.host,addingObject.user);
         db.query(query, (err, results)=> {
             if (err){
                 console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);
@@ -125,7 +125,7 @@ export function updateGroup(group) {
 export function removeUserFromGroup(removingObject) {
     return new Promise((resolve, reject) => {
         query = DB.delete('users_in_group',
-            {field:'host_id', value:removingObject.host_id},
+            {field:'host_id', value:removingObject.group_id},
             {field:'user_id', value:removingObject.user_id});
         db.query(query, (err, results)=>{
             if (err){
@@ -140,8 +140,8 @@ export function removeUserFromGroup(removingObject) {
 export function moveGroups(groups) {
     return new Promise((resolve, reject) => {
         query = DB.update('groups',
-            {field:'id', value:groups.moving_id},
-            {field:'parent_id', value:groups.host_id});
+            {field:'id', value:groups.mover},
+            {field:'parent_id', value:groups.host});
         db.query(query, (err, results)=>{
             if (err){
                 console.error("ERROR IN UPDATE QUERY>>>>>>>>>", err);
@@ -154,32 +154,34 @@ export function moveGroups(groups) {
 
 export async function deleteGroup(group, flatten?) {
     if (flatten) {
-        //find the parent group id
-        query = DB.select('parent_id', 'groups', {field: 'id', value: group.id});
-        db.query(query, async (err, results) => {
-            if (err) {
-                console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
-            }
-            const new_host_id = results[0].parent_id;
-            console.log(new_host_id);
-            const resToReturn = await moveUsersToAnotherGroup(group,new_host_id);
-            return resToReturn;
-            });
-        }
-    else {
-        return await deleteUsersFromAGroup(group);
+        const new_host_id = await getGroupParent(group.id);
+        await moveUsersToAnotherGroup(group, new_host_id);
     }
+    else {
+        await deleteUsersFromAGroup(group);
+    }
+    return new Promise((resolve, reject) => {
+        query = DB.delete('groups',{field:'id', value:group.id});
+        db.query(query, (err, results)=>{
+            if (err){
+                console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
+            }
+            console.log(results);
+            resolve(results.affectedRows);
+        });
+    });
 }
 
-function deleteUsersFromAGroup(group) {
-    //delete the members from the old group
-    query = DB.delete('users_in_group',{field:'host_id', value:group.id});
-    db.query(query, async (err, results)=>{
-        if (err){
-            console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
+function getGroupParent(group_id) {
+    //find the parent group id
+    query = DB.select('parent_id', 'groups', {field: 'id', value: group_id});
+    db.query(query, async (err, results) => {
+        if (err) {
+            console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
         }
-        console.log(results);
-        return await proceedDelete(group);
+        const new_host_id = results[0].parent_id;
+        console.log(new_host_id);
+        return new_host_id;
     });
 }
 
@@ -204,21 +206,20 @@ function moveUsersToAnotherGroup(group, new_host_id) {
                     console.error("ERROR IN UPDATE QUERY>>>>>>>>>", err);
                 }
                 console.log(results);
+                return results;
             });
         }
-        return await proceedDelete(group);
     });
 }
 
-function proceedDelete(group) {
-    return new Promise((resolve, reject) => {
-        query = DB.delete('groups',{field:'id', value:group.id});
-        db.query(query, (err, results)=>{
-            if (err){
-                console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
-            }
-            console.log(results);
-            resolve(results.affectedRows);
-        });
+function deleteUsersFromAGroup(group) {
+    //delete the members from the old group
+    query = DB.delete('users_in_group',{field:'host_id', value:group.id});
+    db.query(query, async (err, results)=>{
+        if (err){
+            console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
+        }
+        console.log(results);
+        return results;
     });
 }

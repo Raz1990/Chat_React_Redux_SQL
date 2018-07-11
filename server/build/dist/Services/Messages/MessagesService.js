@@ -26,6 +26,7 @@ exports.getMessagesHistory = getMessagesHistory;
 function addMessage(msg) {
     return new Promise(function (resolve, reject) {
         query = db_1.default.insert('messages', msg.sender_id, msg.receiver_id, msg.type, msg.content, msg.time);
+        console.log(query);
         db.query(query, function (err, results) {
             if (err) {
                 console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);

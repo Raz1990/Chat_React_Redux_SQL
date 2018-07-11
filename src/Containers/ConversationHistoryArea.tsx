@@ -42,49 +42,18 @@ class ConversationHistoryArea extends React.Component <IConvoProps,IConvoState> 
             return;
         }
         ServerAPI.getMessages(store.getState()['currentUser'].getId(),store.getState()['inChatWith'].getId(),store.getState()['inChatWith'].getType())
-            .then((messageHistory) => {
-                ServerAPI.getMessages(store.getState()['inChatWith'].getId(),store.getState()['currentUser'].getId(),store.getState()['inChatWith'].getType())
-                    .then((otherSideMessageHistory) => {
-                        let fixedMessages = messageHistory.map( msg => {
-                            let sender : User = store.getState()['allUsers'].find(u => u.getId() === msg.sender_id);
-                            let receiver : ICanChat = store.getState()['allUsers'].find(u => u.getId() === msg.receiver_id);
-                            let content = msg.content;
-                            if (!receiver){
-                                receiver = store.getState()['allGroups'].find(g => g.getId() === msg.receiver_id);
-                                content = sender.getName() + ": " + content;
-                            }
-                            return {
-                                id:msg.id,
-                                sender:sender.getName(),
-                                receiver:receiver.getName(),
-                                timeSent:msg.time,
-                                content:content
-                            };
-                        });
-                        fixedMessages = fixedMessages.concat(otherSideMessageHistory.map( msg => {
-                            let sender : User = store.getState()['allUsers'].find(u => u.getId() === msg.sender_id);
-                            let receiver : ICanChat = store.getState()['allUsers'].find(u => u.getId() === msg.receiver_id);
-                            let content = msg.content;
-                            if (!receiver){
-                                receiver = store.getState()['allGroups'].find(g => g.getId() === msg.receiver_id);
-                                content = sender.getName() + ": " + content;
-                            }
-                            return {
-                                id:msg.id,
-                                sender:sender.getName(),
-                                receiver:receiver.getName(),
-                                timeSent:msg.time,
-                                content:content
-                            };
-                        }));
-                        fixedMessages.sort(Helpers.compare);
-                        this.setState({
-                            speechBubbles : fixedMessages
-                        });
-                    });
+            .then(async (messageHistory) => {
+                let fixedMessages = messageHistory;
 
+                //check if its not the samefag talking to himself
+                if (store.getState()['currentUser'].getId() !== store.getState()['inChatWith'].getId()) {
+                    await ServerAPI.getMessages(store.getState()['inChatWith'].getId(), store.getState()['currentUser'].getId(), store.getState()['inChatWith'].getType())
+                        .then((otherSideMessageHistory) => {
+                            fixedMessages = fixedMessages.concat(otherSideMessageHistory);
+                        });
+                }
 
-                let fixedMessages = messageHistory.map( msg => {
+                fixedMessages = fixedMessages.map( msg => {
                     let sender : User = store.getState()['allUsers'].find(u => u.getId() === msg.sender_id);
                     let receiver : ICanChat = store.getState()['allUsers'].find(u => u.getId() === msg.receiver_id);
                     let content = msg.content;
@@ -92,12 +61,16 @@ class ConversationHistoryArea extends React.Component <IConvoProps,IConvoState> 
                         receiver = store.getState()['allGroups'].find(g => g.getId() === msg.receiver_id);
                         content = sender.getName() + ": " + content;
                     }
-                    return {sender:sender.getName(),
-                            receiver:receiver.getName(),
-                            timeSent:msg.time,
-                            content:content
-                            };
+                    return {
+                        id:msg.id,
+                        sender:sender.getName(),
+                        receiver:receiver.getName(),
+                        timeSent:msg.time,
+                        content:content
+                    };
                 });
+
+                fixedMessages.sort(Helpers.compare);
                 this.setState({
                     speechBubbles : fixedMessages
                 });

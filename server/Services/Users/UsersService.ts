@@ -58,7 +58,12 @@ export function getUserByNameXORPassword(user) {
             }
             console.log('in getUserByNameXORPassword');
             console.log(results[0]);
-            resolve(results[0]);
+            if (results.length>0){
+                resolve(results[0]);
+            }
+            else {
+                resolve(0);
+            }
         });
     });
 }

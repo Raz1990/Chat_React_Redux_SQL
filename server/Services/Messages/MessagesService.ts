@@ -32,12 +32,13 @@ export function getMessagesHistory(sender_id,receiver_id,type) {
 export function addMessage(msg) {
     return new Promise((resolve, reject) => {
         query = DB.insert('messages',msg.sender_id,msg.receiver_id,msg.type,msg.content,msg.time);
+        console.log(query);
         db.query(query, (err, results)=> {
             if (err){
                 console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);
             }
             console.log(results);
-            resolve(results.affectedRows);
+            resolve(results.insertId);
         });
     });
 }

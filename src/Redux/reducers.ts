@@ -11,6 +11,7 @@ const handlers = {
     "SET_ALL_ENTITIES": setAllEntities,
     "SET_IN_CHAT_WITH":setInChatWith,
     "SET_CHAT_ELEMENT":setChatElement,
+    "SET_IN_CHAT_WITH_&_SET_CHAT_ELEMENT": setInChatWithAndElement,
     "REFRESH": refresh,
 };
 
@@ -68,6 +69,14 @@ function setChatElement(state: AppState, element: HTMLElement): AppState {
     return {
         ...state,
         chatElement: element,
+    }
+}
+
+function setInChatWithAndElement(state: AppState, elementAndEntity): AppState {
+    return {
+        ...state,
+        inChatWith: elementAndEntity.entity,
+        chatElement: elementAndEntity.element,
     }
 }
 

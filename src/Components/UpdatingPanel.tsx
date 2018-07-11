@@ -18,10 +18,10 @@ interface IUpdateState {
     age : string,
     group_name : string,
     canSubmit : boolean,
-    movingGroup,
+    movingGroupId: number,
     input: string,
-    addedUser,
-    removedUser
+    addedUserId: number,
+    removedUserId: number
 }
 
 class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
@@ -45,9 +45,9 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
             age : age,
             group_name : this.props.updateObject.getName(),
             canSubmit : true,
-            movingGroup : "",
-            addedUser : "",
-            removedUser: "",
+            movingGroupId : 0,
+            addedUserId : 0,
+            removedUserId: 0,
             input: ""
         };
     }
@@ -99,20 +99,23 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
 
     //moving another group to selected group
     SelectedGroupMovingHandler = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const id = parseInt(event.target.selectedOptions[0].id);
         this.setState({
-            movingGroup: event.target.value
+            movingGroupId: id
         });
     };
 
     SelectedUserToAddHandler = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const id = parseInt(event.target.selectedOptions[0].id);
         this.setState({
-            addedUser: event.target.value
+            addedUserId: id
         });
     };
 
     SelectedUserToDeleteHandler = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const id = parseInt(event.target.selectedOptions[0].id);
         this.setState({
-            removedUser: event.target.value
+            removedUserId: id
         });
     };
 
@@ -121,16 +124,16 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
         let shouldContinue = false;
 
         for (const group of this.props.groups) {
-            if (group.group_name === this.props.updateObject.getName()) {
+            if (group.getId() === this.props.updateObject.getId()) {
                 continue;
             }
             if (this.props.updateObject.getParentGroup()) {
-                if (group.group_name === this.props.updateObject.getParentGroup().getName()) {
+                if (group.getId() === this.props.updateObject.getParentGroup().getId()) {
                     continue;
                 }
             }
             for (const groupMember of this.props.updateObject.getGroupMembers()) {
-                if (group.group_name === groupMember.getName()) {
+                if (group.getId() === groupMember.getId()) {
                     shouldContinue = true;
                     break;
                 }
@@ -159,7 +162,7 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
         let okUsers = [];
 
         for (const user of this.props.users) {
-            if (this.props.updateObject.getGroupMembers().find(o => o.getName() === user.user_name)){
+            if (this.props.updateObject.getGroupMembers().find(o => o.getId() === user.getId())){
                 continue;
             }
             okUsers.push(user);
@@ -186,7 +189,7 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
                 let okUsers = this.getEligibleUsers();
 
                 okUsers = okUsers.map((item, idx) => {
-                    return (<option key={idx} value={item.user_name}>{item.user_name}</option>);
+                    return (<option key={idx} id={item.getId()} value={item.user_name}>{item.user_name}</option>);
                 });
 
                 interaction = (
@@ -205,7 +208,7 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
                 let okUsers = this.props.updateObject.getGroupMembers();
 
                 okUsers = okUsers.map((item, idx) => {
-                    return (<option key={idx} value={item.user_name}>{item.user_name}</option>);
+                    return (<option key={idx} id={item.getId()} value={item.user_name}>{item.user_name}</option>);
                 });
 
                 interaction = (
@@ -222,7 +225,7 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
             else {
                 let okGroups = this.getEligibleGroups();
                 okGroups = okGroups.map((item, idx) => {
-                    return (<option key={idx} value={item.group_name}>{item.group_name}</option>);
+                    return (<option key={idx} id={item.getId()} value={item.group_name}>{item.group_name}</option>);
                 });
 
                 interaction = (
@@ -262,9 +265,9 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
 
     update = () => {
         let objectToSend;
-        let movingGroup;
-        let addedUser;
-        let removedUser;
+        let movingGroupId;
+        let addedUserId;
+        let removedUserId;
 
         if (this.objectType === 'group'){
             switch (this.state.selectedAction) {
@@ -277,61 +280,61 @@ class UpdatingPanel extends React.Component<IUpdateProps,IUpdateState> {
                     };
                     break;
                 case "2":
-                    if (!this.state.movingGroup) {
-                        movingGroup = this.getEligibleGroups()[0].group_name;
+                    if (!this.state.movingGroupId) {
+                        movingGroupId = this.getEligibleGroups()[0].getId();
                     }
                     else {
-                        movingGroup = this.state.movingGroup;
+                        movingGroupId = this.state.movingGroupId;
                     }
                     objectToSend = {
                         id: this.props.updateObject.getId(),
                         group_name: this.state.group_name,
                         action: "addGroupToMe",
-                        movingGroup: movingGroup,
-                        whoParent:this.props.updateObject.getName()
+                        movingGroupId: movingGroupId,
+                        whoParent:this.props.updateObject.getId()
                     };
                     break;
                 case "3":
-                    if (!this.state.movingGroup) {
-                        movingGroup = this.getEligibleGroups()[0].group_name;
+                    if (!this.state.movingGroupId) {
+                        movingGroupId = this.getEligibleGroups()[0].getId();
                     }
                     else {
-                        movingGroup = this.state.movingGroup;
+                        movingGroupId = this.state.movingGroupId;
                     }
                     objectToSend = {
                         id: this.props.updateObject.getId(),
                         group_name: this.state.group_name,
                         action: "moveMeToGroup",
-                        movingGroup: this.props.updateObject.getName(),
-                        whoParent: movingGroup
+                        movingGroupId: this.props.updateObject.getId(),
+                        whoParent: movingGroupId
                     };
                     break;
                 case "4":
-                    if (!this.state.addedUser) {
-                        addedUser = this.getEligibleUsers()[0].user_name;
+                    if (!this.state.addedUserId) {
+                        addedUserId = this.getEligibleUsers()[0].getId();
                     }
                     else {
-                        addedUser = this.state.addedUser;
+                        addedUserId = this.state.addedUserId;
                     }
                     objectToSend = {
                         id: this.props.updateObject.getId(),
                         group_name: this.state.group_name,
                         action: "addUserToMe",
-                        addedUser: addedUser
+                        addedUserId: addedUserId
                     };
                     break;
                 case "5":
-                    if (!this.state.removedUser) {
-                        removedUser = this.props.updateObject.getGroupMembers()[0].user_name;
+                    if (!this.state.removedUserId) {
+                        removedUserId = this.props.updateObject.getGroupMembers()[0].getId();
                     }
                     else {
-                        removedUser = this.state.removedUser;
+                        removedUserId = this.state.removedUserId;
                     }
                     objectToSend = {
                         id: this.props.updateObject.getId(),
                         group_name: this.state.group_name,
                         action: "removeUserFromMe",
-                        removedUser: removedUser
+                        removedUserId: removedUserId
                     };
                     break;
             }

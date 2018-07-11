@@ -47,4 +47,11 @@ function setChatElement(element){
     }
 }
 
-export {refresh,setCurrentUser,setAllUsers,setAllGroups,setChatEntities,setInChatWith,setChatElement};
+function setInChatWithAndChatElement(entity, element){
+    return {
+        type: "SET_IN_CHAT_WITH_&_SET_CHAT_ELEMENT",
+        value: {entity,element},
+    }
+}
+
+export {refresh,setCurrentUser,setAllUsers,setAllGroups,setChatEntities,setInChatWith,setChatElement,setInChatWithAndChatElement};

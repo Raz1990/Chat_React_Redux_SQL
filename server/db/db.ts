@@ -30,11 +30,14 @@ export default class DB {
         }
         let filtersCount = 0;
         for (const filter of filters){
-            if (isNaN(filter.value)) {
-                query += `${filter.field} = '${filter.value}'`;
+            let value = filter.value;
+            console.log(value);
+            if (isNaN(value)) {
+                value = value.replace(/\'/g,"''");
+                query += `${filter.field} = '${value}'`;
             }
             else {
-                query += `${filter.field} = ${filter.value}`;
+                query += `${filter.field} = ${value}`;
             }
             if (++filtersCount < filters.length) {
                 query += ' AND ';
@@ -46,8 +49,11 @@ export default class DB {
     static insert(table,...values){
         query = `INSERT INTO ${table} VALUES (0,`;
         let valuesCount = 0;
-        for (const value of values){
+
+        values.forEach((value) => {
             if (isNaN(value)) {
+                value = value.replace(/\'/g,"\'\'");
+
                 query += `'${value}'`;
             }
             else {
@@ -56,26 +62,30 @@ export default class DB {
             if (++valuesCount < values.length) {
                 query += ', ';
             }
-        }
+        });
+
         query += ')';
+        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>QUERY", query);
+
         return query;
     }
 
     static update(table, filter, ...values){
-        // assures theres no updating a whole table by mistake
+        // assures there's no updating a whole table by mistake
         if (!filter){
             return '';
         }
         query = `UPDATE ${table} SET `;
         let valuesCount = 0;
-        for (const value of values){
+        for (let value of values){
+            value = filter.value;
             if (isNaN(value.value)) {
+                value = value.replace(/\'/g,"\'\'");
                 query += `${value.field} = '${value.value}'`;
             }
             else {
                 query += `${value.field} = ${value.value}`;
             }
-            //query+= value.field + ' = ' + value.value;
 
             if (++valuesCount < values.length) {
                 query += ', ';

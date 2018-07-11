@@ -77,18 +77,18 @@ export class ServerAPI {
         return this.post('/groups/moveGroups', groups);
     }
 
-    static addUserToGroup(groupName, userName) {
+    static addUserToGroup(host, user) {
         const addingObject = {
-            groupName,
-            userName
+            host,
+            user
         };
         return this.post('/groups/addUserToGroup', addingObject);
     }
 
-    static removeUserFromGroup(groupName, userName) {
+    static removeUserFromGroup(group_id, user_id) {
         const removingObject = {
-            groupName,
-            userName
+            group_id,
+            user_id
         };
         return this.post('/groups/removeUserFromGroup', removingObject);
     }
@@ -117,9 +117,7 @@ export class ServerAPI {
                 'Content-Type': 'application/json'
             }
         })
-            .then(res => {
-                res.json()
-            });
+            .then(res => res.json());
     }
 
     static delete(url, body) {
@@ -130,9 +128,7 @@ export class ServerAPI {
                 'Content-Type': 'application/json'
             }
         })
-            .then(res => {
-                res.json()
-            });
+            .then(res => res.json());
     }
 }
 

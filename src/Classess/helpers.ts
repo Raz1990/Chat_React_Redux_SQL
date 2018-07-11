@@ -123,8 +123,7 @@ class Helpers {
             chattingWith = Helpers.getChatEntity(parseInt(workingElement.id), workingElement.innerText);
         }
 
-        store.dispatch(actions.setInChatWith(chattingWith));
-        store.dispatch(actions.setChatElement(workingElement));
+        store.dispatch(actions.setInChatWithAndChatElement(chattingWith,workingElement));
     };
 
     static getChatEntity(id: number, name: string) {
@@ -378,17 +377,21 @@ class Helpers {
     }
 
     static generateMockUpAnswers(){
-        Helpers.replies['Raz'] = ['פיצה ויומנגס וצ\'יפס','מה הקטע לדבר עם עצמך?', 'מדבר עם עצמך? באמת?', 'רפלקציה עצמית זה מגניב', 'מה נסגר לדבר עם עצמך?', 'הד הד הדדד', 'המחלקה הפסיכיאטרית בכיוון ההוא'];
-        Helpers.replies['Moshe'] = ['הכל חרטא ברטא תאמין לי','יש לי נוד שמביא צ\'ילדרן של נאד','אמן','לא אכפת לי, אתה צדיק'];
+        Helpers.replies['Raz'] = ['פיצה ויומנגס וציפס','מה הקטע לדבר עם עצמך?', 'מדבר עם עצמך? באמת?', 'רפלקציה עצמית זה מגניב', 'מה נסגר לדבר עם עצמך?', 'הד הד הדדד', 'המחלקה הפסיכיאטרית בכיוון ההוא'];
+        Helpers.replies['Moshe'] = ['הכל חרטא ברטא תאמין לי','יש לי נוד שמביא צילדרן של נאד','אמן','לא אכפת לי, אתה צדיק'];
         Helpers.replies['Itay'] = ['עכשיו תוסיף עוד 100 ש"ח','זה גורם למיינד פאק רציני','מארוול וDC הם אחלה','חם פה אש','אני שולח את זה לAPI חיצוני','אחלה AI לתשובות עשית', 'coc.png'];
         Helpers.replies['Evgeni'] = ['יאללה לאכול','משהו פה לא מסתדר לי','צאו להפסקה'];
         Helpers.replies['Ori'] = ['מגניב!','אז מה למדנו היום?','זה אוכל את זה?', 'נחמד','אני עושה npm i npm start וזהו'];
-        Helpers.replies['Yuval'] = ['עוגי שיגעוגי','פאו צ\'יקא-וואו-וואו','קמהאמאה!!!','HERO   ore o tataeru koe ya   kassai nante   hoshikute wa nai sa!!!','Ka ka ka ka kachi daze!!!','Omae Wa Mou Shindeiru!'];
+        Helpers.replies['Yuval'] = ['עוגי שיגעוגי','פאו ציקא-וואו-וואו','קמהאמאה!!!','HERO   ore o tataeru koe ya   kassai nante   hoshikute wa nai sa!!!','Ka ka ka ka kachi daze!!!','Omae Wa Mou Shindeiru!'];
         Helpers.replies['Best Friends'] = ['איתי: ' + ': טוב לא חשוב הקראק נשאר אצלי', 'משה: ' + ': קראק זה חרטא ברטא', 'איתי: ' +  ': אתם מפספסים אחלה קראק', 'משה: ' +  ': מישהו יכול לעזור לי עם הנוד שלי?', 'איתי: ' + ': חברים חפרתם'];
         //Helpers.replies['Best Friends'] = ['תשובה גנרית'];
     }
 
     static _replies = Helpers.generateMockUpAnswers();
+
+    static addAIReply(name){
+        Helpers.replies[name] = ['תשובה גנרית למשתמש גנרי'];
+    }
 
     static compare(a: any, b: any) {
         if (a.id < b.id) {

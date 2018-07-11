@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {connect} from 'react-redux';
 import '../App.css';
 
 //components imports
@@ -8,20 +9,16 @@ import Modal from "./../Components/Modal";
 import {ServerAPI} from "./../ServerAPI";
 import styles from "./../Styles/styles";
 import {User} from "../Classess/User";
-import {store} from './../Redux/store';
+// import {store} from './../Redux/store';
 import * as actions from './../Redux/actions';
 import Helpers from "../Classess/helpers";
 
-interface IAppProps {
 
-}
-
-class App extends React.Component<IAppProps,any> {
-    constructor(props: IAppProps){
+class App extends React.Component<any,any> {
+    constructor(props: any){
         super(props);
 
         this.state = {
-            currentUser: null,
             user_name: 'Raz',
             password: 'rrr'
         };
@@ -37,7 +34,7 @@ class App extends React.Component<IAppProps,any> {
         Helpers.storeAllEntities();
     }
 
-    submit = () => {
+    /*submit = () => {
         ServerAPI.getSingleUser(this.state.user_name,this.state.password)
             .then((currentUser) => {
                 //if found a user
@@ -52,7 +49,9 @@ class App extends React.Component<IAppProps,any> {
                     alert(this.state.username + ' not found!');
                 }
             });
-    };
+    };*/
+
+    submit = () => this.props.submit(this.state.username, this.state.password);
 
     escape = () => {
       alert("There is no escape...");
@@ -80,7 +79,7 @@ class App extends React.Component<IAppProps,any> {
         return (
             <div id='toor'>
 
-                {!this.state.currentUser ? modal : <div/>}
+                {!this.props.currentUser ? modal : <div/>}
 
                 <ChatEntitiesTree/>
                 <RightArea/>
@@ -89,4 +88,36 @@ class App extends React.Component<IAppProps,any> {
     }
 }
 
-export default App;
+//export default App;
+
+const mapStateToProps = (state, ownProps) => {
+    return {
+        currentUser: state.currentUser
+    }
+};
+
+const mapDispatchToProps = {
+        submit: (username, password) => (dispatch, getState) => {
+            ServerAPI.getSingleUser(username,password)
+                .then((currentUser) => {
+                    //if found a user
+                    if (currentUser){
+                        const user = new User(currentUser.id,currentUser.user_name,currentUser.password,currentUser.age);
+                        alert('Welcome, ' + user.getName());
+                        dispatch(actions.setCurrentUser(user));
+                    }
+                    else {
+                        alert(username + ' not found!');
+                    }
+                });
+        }
+};
+
+const ConnectedApp = connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(App);
+
+console.log("ConnectedApp", ConnectedApp);
+
+export default ConnectedApp;

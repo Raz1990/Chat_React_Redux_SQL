@@ -69,7 +69,7 @@ function addGroup(group_name, parent_id) {
 exports.addGroup = addGroup;
 function addUserToGroup(addingObject) {
     return new Promise(function (resolve, reject) {
-        query = db_1.default.insert('users_in_group', addingObject.host_id, addingObject.user_id);
+        query = db_1.default.insert('users_in_group', addingObject.host, addingObject.user);
         db.query(query, function (err, results) {
             if (err) {
                 console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);
@@ -157,7 +157,7 @@ function updateGroup(group) {
 exports.updateGroup = updateGroup;
 function removeUserFromGroup(removingObject) {
     return new Promise(function (resolve, reject) {
-        query = db_1.default.delete('users_in_group', { field: 'host_id', value: removingObject.host_id }, { field: 'user_id', value: removingObject.user_id });
+        query = db_1.default.delete('users_in_group', { field: 'host_id', value: removingObject.group_id }, { field: 'user_id', value: removingObject.user_id });
         db.query(query, function (err, results) {
             if (err) {
                 console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
@@ -170,7 +170,7 @@ function removeUserFromGroup(removingObject) {
 exports.removeUserFromGroup = removeUserFromGroup;
 function moveGroups(groups) {
     return new Promise(function (resolve, reject) {
-        query = db_1.default.update('groups', { field: 'id', value: groups.moving_id }, { field: 'parent_id', value: groups.host_id });
+        query = db_1.default.update('groups', { field: 'id', value: groups.mover }, { field: 'parent_id', value: groups.host });
         db.query(query, function (err, results) {
             if (err) {
                 console.error("ERROR IN UPDATE QUERY>>>>>>>>>", err);
@@ -183,54 +183,50 @@ function moveGroups(groups) {
 exports.moveGroups = moveGroups;
 function deleteGroup(group, flatten) {
     return __awaiter(this, void 0, void 0, function () {
-        var _this = this;
+        var new_host_id;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (!flatten) return [3 /*break*/, 1];
-                    //find the parent group id
-                    query = db_1.default.select('parent_id', 'groups', { field: 'id', value: group.id });
-                    db.query(query, function (err, results) { return __awaiter(_this, void 0, void 0, function () {
-                        var new_host_id, resToReturn;
-                        return __generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0:
-                                    if (err) {
-                                        console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
-                                    }
-                                    new_host_id = results[0].parent_id;
-                                    console.log(new_host_id);
-                                    return [4 /*yield*/, moveUsersToAnotherGroup(group, new_host_id)];
-                                case 1:
-                                    resToReturn = _a.sent();
-                                    return [2 /*return*/, resToReturn];
+                    if (!flatten) return [3 /*break*/, 3];
+                    return [4 /*yield*/, getGroupParent(group.id)];
+                case 1:
+                    new_host_id = _a.sent();
+                    return [4 /*yield*/, moveUsersToAnotherGroup(group, new_host_id)];
+                case 2:
+                    _a.sent();
+                    return [3 /*break*/, 5];
+                case 3: return [4 /*yield*/, deleteUsersFromAGroup(group)];
+                case 4:
+                    _a.sent();
+                    _a.label = 5;
+                case 5: return [2 /*return*/, new Promise(function (resolve, reject) {
+                        query = db_1.default.delete('groups', { field: 'id', value: group.id });
+                        db.query(query, function (err, results) {
+                            if (err) {
+                                console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
                             }
+                            console.log(results);
+                            resolve(results.affectedRows);
                         });
-                    }); });
-                    return [3 /*break*/, 3];
-                case 1: return [4 /*yield*/, deleteUsersFromAGroup(group)];
-                case 2: return [2 /*return*/, _a.sent()];
-                case 3: return [2 /*return*/];
+                    })];
             }
         });
     });
 }
 exports.deleteGroup = deleteGroup;
-function deleteUsersFromAGroup(group) {
+function getGroupParent(group_id) {
     var _this = this;
-    //delete the members from the old group
-    query = db_1.default.delete('users_in_group', { field: 'host_id', value: group.id });
+    //find the parent group id
+    query = db_1.default.select('parent_id', 'groups', { field: 'id', value: group_id });
     db.query(query, function (err, results) { return __awaiter(_this, void 0, void 0, function () {
+        var new_host_id;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (err) {
-                        console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
-                    }
-                    console.log(results);
-                    return [4 /*yield*/, proceedDelete(group)];
-                case 1: return [2 /*return*/, _a.sent()];
+            if (err) {
+                console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
             }
+            new_host_id = results[0].parent_id;
+            console.log(new_host_id);
+            return [2 /*return*/, new_host_id];
         });
     }); });
 }
@@ -241,40 +237,39 @@ function moveUsersToAnotherGroup(group, new_host_id) {
     db.query(query, function (err, results) { return __awaiter(_this, void 0, void 0, function () {
         var user_members, _i, user_members_1, user;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0:
-                    if (err) {
-                        console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
-                    }
-                    user_members = results;
-                    console.log(user_members);
-                    //update the members to the new group
-                    for (_i = 0, user_members_1 = user_members; _i < user_members_1.length; _i++) {
-                        user = user_members_1[_i];
-                        query = db_1.default.update('users_in_group', { field: 'host_id', value: group.id }, { field: 'host_id', value: new_host_id }, { field: 'user_id', value: user.user_id });
-                        db.query(query, function (err, results) {
-                            if (err) {
-                                console.error("ERROR IN UPDATE QUERY>>>>>>>>>", err);
-                            }
-                            console.log(results);
-                        });
-                    }
-                    return [4 /*yield*/, proceedDelete(group)];
-                case 1: return [2 /*return*/, _a.sent()];
+            if (err) {
+                console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
             }
+            user_members = results;
+            console.log(user_members);
+            //update the members to the new group
+            for (_i = 0, user_members_1 = user_members; _i < user_members_1.length; _i++) {
+                user = user_members_1[_i];
+                query = db_1.default.update('users_in_group', { field: 'host_id', value: group.id }, { field: 'host_id', value: new_host_id }, { field: 'user_id', value: user.user_id });
+                db.query(query, function (err, results) {
+                    if (err) {
+                        console.error("ERROR IN UPDATE QUERY>>>>>>>>>", err);
+                    }
+                    console.log(results);
+                    return results;
+                });
+            }
+            return [2 /*return*/];
         });
     }); });
 }
-function proceedDelete(group) {
-    return new Promise(function (resolve, reject) {
-        query = db_1.default.delete('groups', { field: 'id', value: group.id });
-        db.query(query, function (err, results) {
+function deleteUsersFromAGroup(group) {
+    var _this = this;
+    //delete the members from the old group
+    query = db_1.default.delete('users_in_group', { field: 'host_id', value: group.id });
+    db.query(query, function (err, results) { return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
             if (err) {
                 console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
             }
             console.log(results);
-            resolve(results.affectedRows);
+            return [2 /*return*/, results];
         });
-    });
+    }); });
 }
 //# sourceMappingURL=GroupsService.js.map

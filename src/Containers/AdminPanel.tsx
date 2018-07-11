@@ -91,6 +91,7 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
             ServerAPI.createUser(object)
                 .then((insertId) => {
                 if (insertId){
+                    Helpers.addAIReply(object.user_name);
                     this.addSuccess();
                 }
                 else {
@@ -180,9 +181,10 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                         });
                     break;
                 case "addGroupToMe":
-                    ServerAPI.addGroupToGroup(object.whoParent, object.movingGroup)
+                    ServerAPI.addGroupToGroup(object.whoParent, object.movingGroupId)
                         .then((affectedRows) => {
                             if (affectedRows){
+                                Helpers.decideVisibility(store.getState()['chatElement']);
                                 alert("updated successfully!");
                                 Helpers.storeAllEntities();
                             }
@@ -192,9 +194,10 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                         });
                     break;
                 case "moveMeToGroup":
-                    ServerAPI.addGroupToGroup(object.whoParent, object.movingGroup)
+                    ServerAPI.addGroupToGroup(object.whoParent, object.movingGroupId)
                         .then((affectedRows) => {
                             if (affectedRows){
+                                Helpers.decideVisibility(store.getState()['chatElement']);
                                 alert("updated successfully!");
                                 Helpers.storeAllEntities();
                             }
@@ -204,9 +207,10 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                         });
                     break;
                 case "addUserToMe":
-                    ServerAPI.addUserToGroup(object.group_name, object.addedUser)
+                    ServerAPI.addUserToGroup(object.id, object.addedUserId)
                         .then((affectedRows) => {
                             if (affectedRows){
+                                Helpers.decideVisibility(store.getState()['chatElement']);
                                 alert("updated successfully!");
                                 Helpers.storeAllEntities();
                             }
@@ -216,9 +220,10 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                         });
                     break;
                 case "removeUserFromMe":
-                    ServerAPI.removeUserFromGroup(object.group_name, object.removedUser)
+                    ServerAPI.removeUserFromGroup(object.id, object.removedUserId)
                         .then((affectedRows) => {
                             if (affectedRows){
+                                Helpers.decideVisibility(store.getState()['chatElement']);
                                 alert("updated successfully!");
                                 Helpers.storeAllEntities();
                             }
