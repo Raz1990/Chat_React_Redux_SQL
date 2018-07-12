@@ -14,18 +14,22 @@
     "react-redux": "^5.0.7",
     "react-router-dom": "^4.3.1",
     "react-scripts-ts": "2.16.0",
+    "react-toastify": "^4.1.0",
     "redux": "^4.0.0",
     "redux-thunk": "^2.3.0",
     "socket.io": "^2.1.1",
-    "socket.io-client": "^2.1.1"
+    "socket.io-client": "^2.1.1",
+    "toastify": "^1.0.12"
   },
   "scripts": {
     "start-client": "react-scripts-ts start",
     "build": "react-scripts-ts build",
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
-    "start-server": "nodemon ./server/app.js",
-    "start": "npm run start-client"
+    "start-server": "nodemon .server/build/app.js",
+    "start": "npm run start-client",
+    "superstart": "concurrently \"npm run start-client\" \"npm run start-server\""
+
   },
   "devDependencies": {
     "@types/jest": "^22.2.3",

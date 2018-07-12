@@ -25,6 +25,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     },
     div: {
         textAlign: 'center'
+    },
+    toastImg: {
+        width: '100%'
     }
 };
 
