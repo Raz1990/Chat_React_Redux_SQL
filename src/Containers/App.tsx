@@ -11,10 +11,8 @@ import Modal from "./../Components/Modal";
 import {ServerAPI} from "./../ServerAPI";
 import styles from "./../Styles/styles";
 import {User} from "../Classess/User";
-// import {store} from './../Redux/store';
 import * as actions from './../Redux/actions';
 import Helpers from "../Classess/helpers";
-
 
 class App extends React.Component<any,any> {
     constructor(props: any){
@@ -44,7 +42,6 @@ class App extends React.Component<any,any> {
                     const user = new User(currentUser.id,currentUser.user_name,currentUser.password,currentUser.age);
                     alert('Welcome, ' + user.getName());
                     this.props.login(user);
-                    this.setState({currentUser:user});
                 }
                 else {
                     alert(this.state.username + ' not found!');

@@ -95,7 +95,10 @@ export function getAllUsersInGroups() {
     });
 }
 
-export function deleteUser(user) {
+export async function deleteUser(user) {
+    //first, remove the user from every group it belongs to
+    await removeUserFromGroups(user);
+
     return new Promise((resolve, reject) => {
         query = DB.delete('users',{field:'id', value:user.id});
         db.query(query, (err, results)=>{
@@ -105,6 +108,19 @@ export function deleteUser(user) {
             console.log('in deleteUser');
             console.log(results);
             resolve(results);
+        });
+    });
+}
+
+export function removeUserFromGroups(user) {
+    return new Promise((resolve, reject) => {
+        query = DB.delete('users_in_group',
+            {field:'user_id', value:user.id});
+        db.query(query, (err, results)=>{
+            if (err){
+                console.error("ERROR IN DELETE QUERY>>>>>>>>>", err);
+            }
+            console.log(results);
         });
     });
 }

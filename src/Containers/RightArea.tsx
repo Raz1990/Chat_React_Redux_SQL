@@ -6,8 +6,6 @@ import * as actions from './../Redux/actions';
 //components imports
 import ConversationHistoryArea from './ConversationHistoryArea';
 import MessageInputArea from './MessageInputArea';
-import {User} from './../Classess/User';
-import ICanChat from "./../Interfaces/ChatEntity";
 
 import Helpers from '../Classess/helpers';
 
@@ -15,26 +13,12 @@ interface IRightProps {
 }
 
 interface IRightSTATE {
-    currentUser : User
-    inChatWith : ICanChat | null
 }
 
 class RightArea extends React.Component<IRightProps,IRightSTATE> {
 
     constructor(props: IRightProps){
         super(props);
-
-        this.state = {
-            currentUser : store.getState()['currentUser'],
-            inChatWith: store.getState()['inChatWith'],
-        };
-
-        store.subscribe(() => {
-            this.setState({
-                currentUser : store.getState()['currentUser'],
-                inChatWith: store.getState()['inChatWith']
-            });
-        })
     }
 
     removeActive = () => {
@@ -44,7 +28,7 @@ class RightArea extends React.Component<IRightProps,IRightSTATE> {
 
     public render() {
         //if in a chat with someone
-        if (this.state.inChatWith) {
+        if (store.getState()['inChatWith']) {
             return (
                 <div className="right">
 
@@ -58,7 +42,7 @@ class RightArea extends React.Component<IRightProps,IRightSTATE> {
 
         let noChatText = "";
 
-        if (this.state.currentUser){
+        if (store.getState()['currentUser']){
             noChatText = "Select someone to start a chat!";
         }
 
