@@ -60,6 +60,64 @@ class App extends React.Component<any,any> {
                 }
             });
     };
+    
+    dontTouch = () => {
+        const audio: HTMLAudioElement = new Audio(process.env.PUBLIC_URL + 'sounds/noTouch.mp3');
+        audio.play();
+
+        const Touch = ({ closeToast }:any) => (
+            <img src={process.env.PUBLIC_URL + '/images/notouch.jpg'}/>
+        );
+
+        let time = 3700;
+
+        setTimeout(() => {
+                toast(<Touch />, {
+                    position: toast.POSITION.BOTTOM_RIGHT,
+                    autoClose: 500,
+                    pauseOnHover: false,
+                    hideProgressBar: true
+                });
+                setTimeout(() => {
+                        toast(<Touch />, {
+                            position: toast.POSITION.BOTTOM_CENTER,
+                            autoClose: 500,
+                            pauseOnHover: false,
+                            hideProgressBar: true
+                        });
+                        setTimeout(() => {
+                                toast(<Touch />, {
+                                    position: toast.POSITION.BOTTOM_LEFT,
+                                    autoClose: 500,
+                                    pauseOnHover: false,
+                                    hideProgressBar: true
+                                });
+                                setTimeout(() => {
+                                        toast(<Touch />, {
+                                            position: toast.POSITION.TOP_LEFT,
+                                            autoClose: 500,
+                                            pauseOnHover: false,
+                                            hideProgressBar: true
+                                        });
+                                        setTimeout(() => {
+                                                toast(<Touch />, {
+                                                    position: toast.POSITION.TOP_CENTER,
+                                                    autoClose: false,
+                                                    pauseOnHover: false,
+                                                    closeOnClick:false,
+                                                    draggable:false
+                                                });
+                                            }
+                                            , time-500);
+                                    }
+                                    , time-200);
+                            }
+                            , time);
+                    }
+                    , time);
+            }
+            , 700);
+    };
 
     toast = () => {
         const Toasty = ({ closeToast }:any) => (
@@ -151,6 +209,7 @@ class App extends React.Component<any,any> {
                     <button style={styles.button} onClick={this.surprise}>Surprise Me!</button>
                     <button style={canSubmit ? styles.button : styles.buttonDisabled} disabled={!canSubmit} onClick={this.submit}>Login</button>
                     <button style={styles.button} onClick={this.toast}>A Toast!</button>
+                    <button style={styles.button} onClick={this.dontTouch}>Don't touch me</button>
                 </div>
             </Modal>
         );
