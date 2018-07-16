@@ -98,6 +98,8 @@ export function getAllUsersInGroups() {
 export async function deleteUser(user) {
     //first, remove the user from every group it belongs to
     await removeUserFromGroups(user);
+    //then, remove every message stored either sent or recieved from that user
+    await deleteUserMessages(user.id);
 
     return new Promise((resolve, reject) => {
         query = DB.delete('users',{field:'id', value:user.id});
@@ -108,6 +110,25 @@ export async function deleteUser(user) {
             console.log('in deleteUser');
             console.log(results);
             resolve(results);
+        });
+    });
+}
+
+function deleteUserMessages(user_id) {
+    query = DB.delete('messages',{field:'sender_id', value:user_id});
+    console.log(query);
+    db.query(query, (err, results)=> {
+        if (err){
+            console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);
+        }
+        console.log(results);
+        query = DB.delete('messages',{field:'receiver_id', value:user_id});
+        console.log(query);
+        db.query(query, (err, results)=> {
+            if (err){
+                console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);
+            }
+            console.log(results);
         });
     });
 }

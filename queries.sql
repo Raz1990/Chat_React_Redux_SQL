@@ -41,8 +41,5 @@ DELIMITER ;
   */
 
 
-INSERT INTO users VALUES (0,'Raz', 'rrr', 27);
-
-UPDATE users SET name = 'Raz', password = 'rrr' WHERE id = 1;
 
 
