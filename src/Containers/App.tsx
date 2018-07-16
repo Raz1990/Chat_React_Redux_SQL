@@ -60,7 +60,7 @@ class App extends React.Component<any,any> {
                 }
             });
     };
-    
+
     dontTouch = () => {
         const audio: HTMLAudioElement = new Audio(process.env.PUBLIC_URL + 'sounds/noTouch.mp3');
         audio.play();
@@ -100,7 +100,7 @@ class App extends React.Component<any,any> {
                                             hideProgressBar: true
                                         });
                                         setTimeout(() => {
-                                                toast(<Touch />, {
+                                                toast(<img src={process.env.PUBLIC_URL + '/images/touchDance.gif'}/>, {
                                                     position: toast.POSITION.TOP_CENTER,
                                                     autoClose: false,
                                                     pauseOnHover: false,
@@ -116,7 +116,7 @@ class App extends React.Component<any,any> {
                     }
                     , time);
             }
-            , 700);
+            , 800);
     };
 
     toast = () => {

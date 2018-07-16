@@ -137,6 +137,11 @@ function deleteUser(user) {
                 case 1:
                     //first, remove the user from every group it belongs to
                     _a.sent();
+                    //then, remove every message stored either sent or recieved from that user
+                    return [4 /*yield*/, deleteUserMessages(user.id)];
+                case 2:
+                    //then, remove every message stored either sent or recieved from that user
+                    _a.sent();
                     return [2 /*return*/, new Promise(function (resolve, reject) {
                             query = db_1.default.delete('users', { field: 'id', value: user.id });
                             db.query(query, function (err, results) {
@@ -153,6 +158,24 @@ function deleteUser(user) {
     });
 }
 exports.deleteUser = deleteUser;
+function deleteUserMessages(user_id) {
+    query = db_1.default.delete('messages', { field: 'sender_id', value: user_id });
+    console.log(query);
+    db.query(query, function (err, results) {
+        if (err) {
+            console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);
+        }
+        console.log(results);
+        query = db_1.default.delete('messages', { field: 'receiver_id', value: user_id });
+        console.log(query);
+        db.query(query, function (err, results) {
+            if (err) {
+                console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);
+            }
+            console.log(results);
+        });
+    });
+}
 function removeUserFromGroups(user) {
     return new Promise(function (resolve, reject) {
         query = db_1.default.delete('users_in_group', { field: 'user_id', value: user.id });
