@@ -40,16 +40,26 @@ class App extends React.Component<any,any> {
                 //if found a user
                 if (currentUser){
                     const user = new User(currentUser.id,currentUser.user_name,currentUser.password,currentUser.age);
-                    alert('Welcome, ' + user.getName());
+
+                    toast.success("Welcome, " + user.getName(), {
+                        position: toast.POSITION.TOP_CENTER,
+                        autoClose: 2000,
+                        pauseOnHover: false,
+                        hideProgressBar: true
+                    });
+                    
                     this.props.login(user);
                 }
                 else {
-                    alert(this.state.username + ' not found!');
+                    toast.error(this.state.username + ' not found!', {
+                        position: toast.POSITION.TOP_CENTER,
+                        autoClose: 2000,
+                        pauseOnHover: false,
+                        hideProgressBar: true
+                    });
                 }
             });
     };
-
-    //submit = () => this.props.submit(this.state.username, this.state.password);
 
     toast = () => {
         const Toasty = ({ closeToast }:any) => (
@@ -65,7 +75,8 @@ class App extends React.Component<any,any> {
 
         setTimeout(() => {
             const audio: HTMLAudioElement = new Audio(process.env.PUBLIC_URL + 'sounds/toasty.wav');
-            audio.play()}
+            audio.play()
+            }
             , 200);
     };
 

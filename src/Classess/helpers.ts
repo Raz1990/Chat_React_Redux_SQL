@@ -8,7 +8,6 @@ import {ServerAPI} from "../ServerAPI";
 const socket = io('http://localhost:4000');
 
 class Helpers {
-
     static async storeAllEntities(){
         await Helpers.storeUsers();
         await Helpers.storeGroups();

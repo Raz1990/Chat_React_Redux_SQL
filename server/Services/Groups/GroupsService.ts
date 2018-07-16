@@ -31,7 +31,7 @@ export function addGroup(group_name, parent_id?) {
                 console.error("ERROR IN INSERT QUERY>>>>>>>>>", err);
             }
             console.log(results);
-            resolve(results.affectedRows);
+            resolve(results.insertId);
         });
     });
 }
@@ -62,14 +62,18 @@ export function getAllGroups() {
     });
 }
 
-export function getGroupMembers(group_id) {
+export function getGroupMembers(group_id: number,justChecking?: boolean) {
     return new Promise((resolve, reject) => {
         query = DB.select('user_id','users_in_group', {field:'host_id', value:group_id});
         db.query(query, (err, results)=>{
             if (err){
                 console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
+                resolve(0);
             }
-            if (results.length>0) {
+            if (justChecking){
+                resolve(results.length);
+            }
+            else if (results.length>0) {
                 console.log(results);
                 query = `SELECT * FROM users WHERE id IN (${results.map(u => u.user_id)})`;
                 db.query(query, (err, results)=> {
@@ -137,8 +141,17 @@ export function removeUserFromGroup(removingObject) {
     });
 }
 
-export function moveGroups(groups) {
-    return new Promise((resolve, reject) => {
+export async function moveGroups(groups) {
+    //check if the hosting group has users in it
+    const usersNumber = await getGroupMembers(groups.host, true);
+
+    if (usersNumber>0) {
+        //create a new group named temp inside the host
+        const insertId = await addGroup("temp", groups.host);
+        await moveUsersToAnotherGroup(groups.host, insertId);
+    }
+
+    return new Promise(async (resolve, reject) => {
         query = DB.update('groups',
             {field:'id', value:groups.mover},
             {field:'parent_id', value:groups.host});
@@ -155,7 +168,7 @@ export function moveGroups(groups) {
 export async function deleteGroup(group, flatten?) {
     if (flatten) {
         const new_host_id = await getGroupParent(group.id);
-        await moveUsersToAnotherGroup(group, new_host_id);
+        await moveUsersToAnotherGroup(group.id, new_host_id);
     }
     else {
         await deleteUsersFromAGroup(group);
@@ -185,30 +198,32 @@ function getGroupParent(group_id) {
     });
 }
 
-function moveUsersToAnotherGroup(group, new_host_id) {
-    //find the group users
-    query = DB.select('user_id', 'users_in_group', {field: 'host_id', value: group.id});
-    db.query(query, async (err, results) => {
-        if (err) {
-            console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
-        }
-        const user_members = results;
-        console.log(user_members);
+function moveUsersToAnotherGroup(original_id, new_host_id) {
+    return new Promise((resolve, reject) => {
+        //find the group users
+        query = DB.select('user_id', 'users_in_group', {field: 'host_id', value: original_id});
+        db.query(query, async (err, results) => {
+            if (err) {
+                console.error("ERROR IN SELECT QUERY>>>>>>>>>", err);
+            }
+            const user_members = results;
+            console.log(user_members);
 
-        //update the members to the new group
-        for (const user of user_members) {
-            query = DB.update('users_in_group',
-                {field: 'host_id', value: group.id},
-                {field: 'host_id', value: new_host_id},
-                {field: 'user_id', value: user.user_id});
-            db.query(query, (err, results) => {
-                if (err) {
-                    console.error("ERROR IN UPDATE QUERY>>>>>>>>>", err);
-                }
-                console.log(results);
-                return results;
-            });
-        }
+            //update the members to the new group
+            for (const user of user_members) {
+                query = DB.update('users_in_group',
+                    {field: 'host_id', value: original_id},
+                    {field: 'host_id', value: new_host_id},
+                    {field: 'user_id', value: user.user_id});
+                db.query(query, (err, results) => {
+                    if (err) {
+                        console.error("ERROR IN UPDATE QUERY>>>>>>>>>", err);
+                    }
+                    console.log(results);
+                    resolve(results);
+                });
+            }
+        });
     });
 }
 

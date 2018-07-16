@@ -8,9 +8,9 @@ import Helpers from '../Classess/helpers';
 import {Group} from "../Classess/Group";
 import AdminPanel from './AdminPanel';
 import {store} from './../Redux/store';
-//import * as actions from './../Redux/actions';
 
 interface ITreeState {
+    entities: ICanChat[]
 }
 
 interface ITreeProps {
@@ -25,6 +25,13 @@ class ChatEntitiesTree extends React.Component<ITreeProps,ITreeState> {
 
         this.ulTree = React.createRef();
 
+        this.state = {
+            entities: store.getState()['allEntities']
+        };
+
+        store.subscribe( () => {
+            this.setState({entities: store.getState()['allEntities']});
+        });
     }
 
     singleLiCreate(item : ICanChat, orderIdValue? : number, childElement? : any, parentLiClassName?: string, repeatSpaces? : number, chatable?: boolean){
@@ -132,7 +139,7 @@ class ChatEntitiesTree extends React.Component<ITreeProps,ITreeState> {
         let entitiesTree = [];
         let adminPanel = <div/>;
         if (store.getState()['currentUser']){
-            entitiesTree = this.createListItems(store.getState()['allEntities']);
+            entitiesTree = this.createListItems(this.state.entities);
             adminPanel = <AdminPanel/>;
         }
 

@@ -8,6 +8,7 @@ import styles from "./../Styles/styles";
 import {ServerAPI} from "../ServerAPI";
 import {store} from './../Redux/store';
 import Helpers from "../Classess/helpers";
+import {toast} from "react-toastify";
 
 interface IPanelState {
     panel: string
@@ -95,7 +96,7 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                     this.addSuccess();
                 }
                 else {
-                    alert('Cant add!');
+                    this.showToastError('Cant add!');
                 }
             });
         }
@@ -106,7 +107,7 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                         this.addSuccess();
                     }
                     else {
-                        alert('Cant add!');
+                        this.showToastError('Cant add!');
                     }
                 });
         }
@@ -114,7 +115,7 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
     };
 
     addSuccess = () => {
-        alert("added successfully");
+        this.showToastSuccess("added successfully");
         Helpers.storeAllEntities();
 
         if (store.getState()['chatElement']){
@@ -130,23 +131,24 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
             ServerAPI.deleteUser(object)
                 .then((affectedRows) => {
                     if (affectedRows){
-                        alert("deleted successfully");
+                        this.showToastSuccess("deleted successfully");
                         Helpers.storeAllEntities();
                     }
                     else {
-                        alert('Cant delete!');
+                        this.showToastError('Cant delete!');
                     }
                 });
         }
         else {
+            object.setParentGroup(null);
             ServerAPI.deleteGroup(object)
                 .then((affectedRows) => {
                     if (affectedRows){
-                        alert("deleted successfully");
+                        this.showToastSuccess("deleted successfully");
                         Helpers.storeAllEntities();
                     }
                     else {
-                        alert('Cant delete!');
+                        this.showToastError('Cant delete!');
                     }
                 });
         }
@@ -158,11 +160,11 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
             ServerAPI.updateUser(object)
                 .then((affectedRows) => {
                     if (affectedRows){
-                        alert("updated successfully!");
+                        this.showToastSuccess("updated successfully!");
                         Helpers.storeAllEntities();
                     }
                     else {
-                        alert('Cant update!');
+                        this.showToastError('Cant update!');
                     }
                 });
         }
@@ -172,11 +174,11 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                     ServerAPI.updateGroup(object)
                         .then((affectedRows) => {
                             if (affectedRows){
-                                alert("updated successfully!");
+                                this.showToastSuccess("updated successfully!");
                                 Helpers.storeAllEntities();
                             }
                             else {
-                                alert('Cant update!');
+                                this.showToastError('Cant update!');
                             }
                         });
                     break;
@@ -185,11 +187,11 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                         .then((affectedRows) => {
                             if (affectedRows){
                                 Helpers.decideVisibility(store.getState()['chatElement']);
-                                alert("updated successfully!");
+                                this.showToastSuccess("updated successfully!");
                                 Helpers.storeAllEntities();
                             }
                             else {
-                                alert('Cant move!');
+                                this.showToastError('Cant move!');
                             }
                         });
                     break;
@@ -198,11 +200,11 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                         .then((affectedRows) => {
                             if (affectedRows){
                                 Helpers.decideVisibility(store.getState()['chatElement']);
-                                alert("updated successfully!");
+                                this.showToastSuccess("updated successfully!");
                                 Helpers.storeAllEntities();
                             }
                             else {
-                                alert('Cant move!');
+                                this.showToastError('Cant move!');
                             }
                         });
                     break;
@@ -211,11 +213,11 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                         .then((affectedRows) => {
                             if (affectedRows){
                                 Helpers.decideVisibility(store.getState()['chatElement']);
-                                alert("updated successfully!");
+                                this.showToastSuccess("updated successfully!");
                                 Helpers.storeAllEntities();
                             }
                             else {
-                                alert('Cant move!');
+                                this.showToastError('Cant move!');
                             }
                         });
                     break;
@@ -224,11 +226,11 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
                         .then((affectedRows) => {
                             if (affectedRows){
                                 Helpers.decideVisibility(store.getState()['chatElement']);
-                                alert("updated successfully!");
+                                this.showToastSuccess("updated successfully!");
                                 Helpers.storeAllEntities();
                             }
                             else {
-                                alert('Cant move!');
+                                this.showToastError('Cant move!');
                             }
                         });
                     break;
@@ -242,6 +244,24 @@ class AdminPanel extends React.Component<IPanelProps,IPanelState> {
             panel: ""
         });
     };
+
+    showToastSuccess(content){
+        toast.success(content, {
+            position: toast.POSITION.TOP_CENTER,
+            autoClose: 2000,
+            pauseOnHover: false,
+            hideProgressBar: true
+        });
+    }
+
+    showToastError(content){
+        toast.error(content, {
+            position: toast.POSITION.TOP_CENTER,
+            autoClose: 2000,
+            pauseOnHover: false,
+            hideProgressBar: true
+        });
+    }
 
     public render() {
 
